@@ -9,7 +9,7 @@ interface GridConfiguration {
   budget: number
   coverageGrid: [columns: number, rows: number]
   fallbackGrid: [columns: number, rows: number]
-  focusRings: Array<{ radiusKm: number; points: number }>
+  focusSampleCount: number
 }
 
 const GRID_CONFIGURATION: Record<DetailLevel, GridConfiguration> = {
@@ -17,25 +17,19 @@ const GRID_CONFIGURATION: Record<DetailLevel, GridConfiguration> = {
     budget: 12,
     coverageGrid: [4, 2],
     fallbackGrid: [4, 3],
-    focusRings: [{ radiusKm: 3, points: 4 }],
+    focusSampleCount: 4,
   },
   balanced: {
     budget: 24,
     coverageGrid: [4, 4],
     fallbackGrid: [6, 4],
-    focusRings: [
-      { radiusKm: 2, points: 4 },
-      { radiusKm: 6, points: 4 },
-    ],
+    focusSampleCount: 8,
   },
   precise: {
     budget: 40,
     coverageGrid: [6, 4],
     fallbackGrid: [8, 5],
-    focusRings: [
-      { radiusKm: 2, points: 8 },
-      { radiusKm: 6, points: 8 },
-    ],
+    focusSampleCount: 16,
   },
 }
 
@@ -62,16 +56,31 @@ function createRegularGrid(
   return result
 }
 
-function createFocusRing(
+function viewportFocusRadiusKm(
+  bounds: MapBounds,
   focus: Coordinates,
-  radiusKm: number,
+): number {
+  const latitudeKm = 111.32
+  const longitudeKm = latitudeKm * Math.cos((focus[0] * Math.PI) / 180)
+  const heightKm = Math.abs(bounds.northEast[0] - bounds.southWest[0]) * latitudeKm
+  const widthKm = Math.abs(bounds.northEast[1] - bounds.southWest[1]) * longitudeKm
+
+  return Math.max(2, Math.min(60, Math.hypot(widthKm, heightKm) * 0.38))
+}
+
+function createFocusSpiral(
+  focus: Coordinates,
   pointCount: number,
+  maxRadiusKm: number,
 ): Coordinates[] {
   const latitudeKm = 111.32
   const longitudeKm = latitudeKm * Math.cos((focus[0] * Math.PI) / 180)
+  const goldenAngle = Math.PI * (3 - Math.sqrt(5))
 
   return Array.from({ length: pointCount }, (_, index) => {
-    const angle = (2 * Math.PI * index) / pointCount
+    const progress = (index + 1) / (pointCount + 0.5)
+    const radiusKm = maxRadiusKm * Math.pow(progress, 1.6)
+    const angle = index * goldenAngle + Math.PI / 7
     return [
       focus[0] + (Math.sin(angle) * radiusKm) / latitudeKm,
       focus[1] + (Math.cos(angle) * radiusKm) / longitudeKm,
@@ -106,8 +115,10 @@ export function createAnchorGrid(
   const configuration = GRID_CONFIGURATION[detail]
   if (!focus) return createRegularGrid(bounds, configuration.fallbackGrid)
 
-  const focused = configuration.focusRings.flatMap(({ radiusKm, points }) =>
-    createFocusRing(focus, radiusKm, points),
+  const focused = createFocusSpiral(
+    focus,
+    configuration.focusSampleCount,
+    viewportFocusRadiusKm(bounds, focus),
   )
   const candidates = uniquePoints([
     ...focused.filter((point) => isInsideBounds(point, bounds)),
