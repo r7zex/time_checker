@@ -69,7 +69,7 @@ export function YandexMap({
     if (projected.length === 0) return
 
     const step = Math.max(6, Math.round(rect.width / 180))
-    context.filter = 'blur(10px)'
+    context.filter = 'blur(4px)'
     for (let y = -step; y < rect.height + step; y += step) {
       for (let x = -step; x < rect.width + step; x += step) {
         const minutes = interpolateMinutes([x, y], projected)
