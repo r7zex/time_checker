@@ -1,17 +1,9 @@
-import { useCallback, useState } from 'react'
+import { lazy, Suspense, useCallback, useState } from 'react'
 import { ControlPanel } from './components/ControlPanel'
-import { DemoMap } from './components/DemoMap'
 import { HeatLegend } from './components/HeatLegend'
-import { YandexMap } from './components/YandexMap'
 import { SettingsIcon } from './components/icons'
-import { createTravelCacheKey, getCachedMinutes, setCachedMinutes } from './lib/cache'
-import {
-  createAnchorGrid,
-  detailPointCount,
-  includeOriginSample,
-  mapWithConcurrency,
-} from './lib/grid'
-import { calculateRouteMinutes, loadYandexMaps } from './lib/yandex'
+import { detailPointCount } from './lib/grid'
+import { calculateTravelSamples } from './lib/travel'
 import type {
   CalculationProgress,
   Coordinates,
@@ -34,14 +26,16 @@ const FALLBACK_BOUNDS: MapBounds = {
   northEast: [55.91, 37.9],
 }
 
-const apiKey = import.meta.env.VITE_YANDEX_MAPS_API_KEY?.trim() ?? ''
-const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true'
+const CENTRAL_TELEGRAPH: Coordinates = [55.758272, 37.611014]
+const OpenMap = lazy(() =>
+  import('./components/OpenMap').then((module) => ({ default: module.OpenMap })),
+)
 
 export default function App() {
-  const [point, setPoint] = useState<Coordinates | null>(null)
+  const [point, setPoint] = useState<Coordinates | null>(CENTRAL_TELEGRAPH)
   const [bounds, setBounds] = useState<MapBounds>(FALLBACK_BOUNDS)
   const [direction, setDirection] = useState<Direction>('to')
-  const [transport, setTransport] = useState<TransportMode>('all')
+  const [transport, setTransport] = useState<TransportMode>('metro')
   const [detail, setDetail] = useState<DetailLevel>('balanced')
   const [samples, setSamples] = useState<TravelSample[]>([])
   const [progress, setProgress] = useState<CalculationProgress>(EMPTY_PROGRESS)
@@ -65,80 +59,22 @@ export default function App() {
   const handleCalculate = useCallback(async () => {
     if (!point || isCalculating) return
 
-    const anchors = createAnchorGrid(bounds, detail, point)
+    const total = detailPointCount(detail)
     setIsCalculating(true)
     setError(null)
     setSamples([])
-    setProgress({ ...EMPTY_PROGRESS, total: anchors.length })
+    setProgress({ ...EMPTY_PROGRESS, total })
 
-    if (isDemoMode) {
-      const demoSamples = anchors.map((coordinates) => {
-        const latitudeScale = (coordinates[0] - point[0]) * 111
-        const longitudeScale =
-          (coordinates[1] - point[1]) *
-          111 *
-          Math.cos((point[0] * Math.PI) / 180)
-        const distance = Math.hypot(latitudeScale, longitudeScale)
-        const multiplier = transport === 'walk' ? 12 : transport === 'all' ? 2.7 : 3.4
-        return {
-          coordinates,
-          minutes: Math.max(2, Math.round(distance * multiplier)),
-          fromCache: false,
-        }
-      })
-      setSamples(includeOriginSample(demoSamples, point))
+    try {
+      await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()))
+      const calculated = calculateTravelSamples(point, bounds, detail, transport)
+      setSamples(calculated)
       setProgress({
-        completed: anchors.length,
-        total: anchors.length,
+        completed: calculated.length,
+        total: calculated.length,
         apiRequests: 0,
         cached: 0,
       })
-      setIsCalculating(false)
-      return
-    }
-
-    try {
-      const ymaps = await loadYandexMaps(apiKey)
-      const result = await mapWithConcurrency(anchors, 4, async (anchor) => {
-        const cacheKey = createTravelCacheKey(point, anchor, direction, transport)
-        const cached = getCachedMinutes(cacheKey)
-        if (cached !== null) {
-          setProgress((current) => ({
-            ...current,
-            completed: current.completed + 1,
-            cached: current.cached + 1,
-          }))
-          return { coordinates: anchor, minutes: cached, fromCache: true }
-        }
-
-        setProgress((current) => ({
-          ...current,
-          apiRequests: current.apiRequests + 1,
-        }))
-        const minutes = await calculateRouteMinutes(
-          ymaps,
-          anchor,
-          point,
-          direction,
-          transport,
-        )
-        setProgress((current) => ({
-          ...current,
-          completed: current.completed + 1,
-        }))
-
-        if (minutes === null) return null
-        setCachedMinutes(cacheKey, minutes)
-        return { coordinates: anchor, minutes, fromCache: false }
-      })
-
-      const available = result.filter((sample): sample is TravelSample => sample !== null)
-      if (available.length < Math.ceil(anchors.length / 3)) {
-        setSamples([])
-        setError('Слишком мало подходящих маршрутов. Попробуйте другой вид транспорта.')
-      } else {
-        setSamples(includeOriginSample(available, point))
-      }
     } catch (calculationError) {
       setError(
         calculationError instanceof Error
@@ -148,85 +84,59 @@ export default function App() {
     } finally {
       setIsCalculating(false)
     }
-  }, [bounds, detail, direction, isCalculating, point, transport])
-
-  const missingKey = !apiKey && !isDemoMode
+  }, [bounds, detail, isCalculating, point, transport])
 
   return (
     <main className="app-shell">
-      {missingKey ? (
-        <div className="setup-state">
-          <div className="setup-state__map" aria-hidden="true" />
-          <section className="setup-state__panel">
-            <span className="setup-state__number">1</span>
-            <h1>Подключите карту</h1>
-            <p>
-              Создайте <code>.env.local</code> и добавьте ключ JavaScript API Яндекс Карт.
-              Другие API для выбора точки и расчёта зон не нужны.
-            </p>
-            <pre>VITE_YANDEX_MAPS_API_KEY=ваш_ключ</pre>
-            <p className="setup-state__hint">
-              Для просмотра интерфейса без запросов можно временно указать{' '}
-              <code>VITE_DEMO_MODE=true</code>.
-            </p>
-          </section>
-        </div>
-      ) : (
-        <>
-          {isDemoMode ? (
-            <DemoMap point={point} samples={samples} onPointChange={handlePointChange} />
-          ) : (
-            <YandexMap
-              apiKey={apiKey}
-              point={point}
-              samples={samples}
-              onPointChange={handlePointChange}
-              onBoundsChange={setBounds}
-              onError={setError}
-            />
-          )}
+      <Suspense fallback={<div className="map-loading">Загружаем открытую карту…</div>}>
+        <OpenMap
+          point={point}
+          samples={samples}
+          onPointChange={handlePointChange}
+          onBoundsChange={setBounds}
+          onError={setError}
+        />
+      </Suspense>
 
-          <div className="mobile-titlebar">
-            <span>Время в пути</span>
-            <button
-              type="button"
-              aria-label={controlsOpen ? 'Свернуть настройки' : 'Открыть настройки'}
-              aria-expanded={controlsOpen}
-              onClick={() => setControlsOpen((current) => !current)}
-            >
-              <SettingsIcon />
-            </button>
-          </div>
+      <div className="mobile-titlebar">
+        <span>Время в пути</span>
+        <button
+          type="button"
+          aria-label={controlsOpen ? 'Свернуть настройки' : 'Открыть настройки'}
+          aria-expanded={controlsOpen}
+          onClick={() => setControlsOpen((current) => !current)}
+        >
+          <SettingsIcon />
+        </button>
+      </div>
 
-          <ControlPanel
-            direction={direction}
-            transport={transport}
-            detail={detail}
-            hasPoint={Boolean(point)}
-            isCalculating={isCalculating}
-            progress={progress.total ? progress : { ...progress, total: detailPointCount(detail) }}
-            error={error}
-            isCollapsed={!controlsOpen}
-            onDirectionChange={(value) => {
-              setDirection(value)
-              handleConfigurationChange()
-            }}
-            onTransportChange={(value) => {
-              setTransport(value)
-              handleConfigurationChange()
-            }}
-            onDetailChange={(value) => {
-              setDetail(value)
-              handleConfigurationChange()
-            }}
-            onCalculate={handleCalculate}
-          />
-          <HeatLegend />
-          <div className="accuracy-note">
-            Карта показывает приблизительное время в пути
-          </div>
-        </>
-      )}
+      <ControlPanel
+        direction={direction}
+        transport={transport}
+        detail={detail}
+        hasPoint={Boolean(point)}
+        isCalculating={isCalculating}
+        progress={progress.total ? progress : { ...progress, total: detailPointCount(detail) }}
+        error={error}
+        isCollapsed={!controlsOpen}
+        onDirectionChange={(value) => {
+          setDirection(value)
+          handleConfigurationChange()
+        }}
+        onTransportChange={(value) => {
+          setTransport(value)
+          handleConfigurationChange()
+        }}
+        onDetailChange={(value) => {
+          setDetail(value)
+          handleConfigurationChange()
+        }}
+        onCalculate={handleCalculate}
+      />
+      <HeatLegend />
+      <div className="accuracy-note">
+        Метро считается по открытому графу станций; пешие участки — приближённо
+      </div>
     </main>
   )
 }
