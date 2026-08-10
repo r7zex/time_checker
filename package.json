@@ -7,9 +7,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "update:metro": "node scripts/update-metro-data.mjs"
   },
   "dependencies": {
+    "maplibre-gl": "^6.3.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
