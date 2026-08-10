@@ -9,6 +9,15 @@ import {
 
 const CENTRAL_TELEGRAPH = [55.758272, 37.611014] as [number, number]
 
+function distanceFromCentralTelegraph([latitude, longitude]: [number, number]) {
+  const northKm = (latitude - CENTRAL_TELEGRAPH[0]) * 111.32
+  const eastKm =
+    (longitude - CENTRAL_TELEGRAPH[1]) *
+    111.32 *
+    Math.cos((CENTRAL_TELEGRAPH[0] * Math.PI) / 180)
+  return Math.hypot(northKm, eastKm)
+}
+
 describe('anchor grid', () => {
   const bounds = {
     southWest: [55, 37] as [number, number],
@@ -27,23 +36,53 @@ describe('anchor grid', () => {
     expect(points.every(([lat, lon]) => lat > 55 && lat < 56 && lon > 37 && lon < 38)).toBe(true)
   })
 
-  it('adds close-range samples around the Central Telegraph', () => {
-    const moscowBounds = {
-      southWest: [55.58, 37.34] as [number, number],
-      northEast: [55.91, 37.9] as [number, number],
+  it('scales focused samples from central Moscow to the suburbs', () => {
+    const zoomedOutMoscowBounds = {
+      southWest: [55.3, 36.7] as [number, number],
+      northEast: [56.2, 38.8] as [number, number],
     }
-    const points = createAnchorGrid(moscowBounds, 'balanced', CENTRAL_TELEGRAPH)
-    const localPoints = points.filter(([latitude, longitude]) => {
-      const northKm = (latitude - CENTRAL_TELEGRAPH[0]) * 111.32
-      const eastKm =
-        (longitude - CENTRAL_TELEGRAPH[1]) *
-        111.32 *
-        Math.cos((CENTRAL_TELEGRAPH[0] * Math.PI) / 180)
-      return Math.hypot(northKm, eastKm) <= 6.1
-    })
+    const points = createAnchorGrid(
+      zoomedOutMoscowBounds,
+      'balanced',
+      CENTRAL_TELEGRAPH,
+    )
+    const focusedDistances = points
+      .slice(0, 8)
+      .map(distanceFromCentralTelegraph)
+      .sort((left, right) => left - right)
 
     expect(points).toHaveLength(24)
-    expect(localPoints.length).toBeGreaterThanOrEqual(8)
+    expect(focusedDistances[0]).toBeLessThan(3)
+    expect(focusedDistances[2]).toBeGreaterThan(8)
+    expect(focusedDistances.at(-1)).toBeGreaterThan(40)
+  })
+
+  it('spreads focused samples across at least six directions', () => {
+    const zoomedOutMoscowBounds = {
+      southWest: [55.3, 36.7] as [number, number],
+      northEast: [56.2, 38.8] as [number, number],
+    }
+    const focused = createAnchorGrid(
+      zoomedOutMoscowBounds,
+      'balanced',
+      CENTRAL_TELEGRAPH,
+    ).slice(0, 8)
+    const sectors = new Set(
+      focused.map(([latitude, longitude]) => {
+        const northKm = (latitude - CENTRAL_TELEGRAPH[0]) * 111.32
+        const eastKm =
+          (longitude - CENTRAL_TELEGRAPH[1]) *
+          111.32 *
+          Math.cos((CENTRAL_TELEGRAPH[0] * Math.PI) / 180)
+        const angle = Math.atan2(
+          northKm,
+          eastKm,
+        )
+        return Math.floor((((angle + Math.PI) / (2 * Math.PI)) * 8) % 8)
+      }),
+    )
+
+    expect(sectors.size).toBeGreaterThanOrEqual(6)
   })
 })
 
