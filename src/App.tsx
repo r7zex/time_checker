@@ -5,7 +5,12 @@ import { HeatLegend } from './components/HeatLegend'
 import { YandexMap } from './components/YandexMap'
 import { SettingsIcon } from './components/icons'
 import { createTravelCacheKey, getCachedMinutes, setCachedMinutes } from './lib/cache'
-import { createAnchorGrid, detailPointCount, mapWithConcurrency } from './lib/grid'
+import {
+  createAnchorGrid,
+  detailPointCount,
+  includeOriginSample,
+  mapWithConcurrency,
+} from './lib/grid'
 import { calculateRouteMinutes, loadYandexMaps } from './lib/yandex'
 import type {
   CalculationProgress,
@@ -60,7 +65,7 @@ export default function App() {
   const handleCalculate = useCallback(async () => {
     if (!point || isCalculating) return
 
-    const anchors = createAnchorGrid(bounds, detail)
+    const anchors = createAnchorGrid(bounds, detail, point)
     setIsCalculating(true)
     setError(null)
     setSamples([])
@@ -81,7 +86,7 @@ export default function App() {
           fromCache: false,
         }
       })
-      setSamples(demoSamples)
+      setSamples(includeOriginSample(demoSamples, point))
       setProgress({
         completed: anchors.length,
         total: anchors.length,
@@ -128,9 +133,11 @@ export default function App() {
       })
 
       const available = result.filter((sample): sample is TravelSample => sample !== null)
-      setSamples(available)
       if (available.length < Math.ceil(anchors.length / 3)) {
+        setSamples([])
         setError('Слишком мало подходящих маршрутов. Попробуйте другой вид транспорта.')
+      } else {
+        setSamples(includeOriginSample(available, point))
       }
     } catch (calculationError) {
       setError(
