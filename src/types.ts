@@ -3,16 +3,14 @@ export type Coordinates = [latitude: number, longitude: number]
 export type Direction = 'to' | 'from'
 
 export type TransportMode =
-  | 'all'
   | 'metro'
-  | 'bus'
-  | 'tram'
   | 'walk'
 
 export type DetailLevel = 'fast' | 'balanced' | 'precise'
 
 export interface TravelSample {
   coordinates: Coordinates
+  cellBounds: MapBounds
   minutes: number
   fromCache: boolean
 }
