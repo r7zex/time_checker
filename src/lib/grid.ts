@@ -5,22 +5,48 @@ import type {
   TravelSample,
 } from '../types'
 
-const GRID_SIZE: Record<DetailLevel, [columns: number, rows: number]> = {
-  fast: [4, 3],
-  balanced: [6, 4],
-  precise: [8, 5],
+interface GridConfiguration {
+  budget: number
+  coverageGrid: [columns: number, rows: number]
+  fallbackGrid: [columns: number, rows: number]
+  focusRings: Array<{ radiusKm: number; points: number }>
+}
+
+const GRID_CONFIGURATION: Record<DetailLevel, GridConfiguration> = {
+  fast: {
+    budget: 12,
+    coverageGrid: [4, 2],
+    fallbackGrid: [4, 3],
+    focusRings: [{ radiusKm: 3, points: 4 }],
+  },
+  balanced: {
+    budget: 24,
+    coverageGrid: [4, 4],
+    fallbackGrid: [6, 4],
+    focusRings: [
+      { radiusKm: 2, points: 4 },
+      { radiusKm: 6, points: 4 },
+    ],
+  },
+  precise: {
+    budget: 40,
+    coverageGrid: [6, 4],
+    fallbackGrid: [8, 5],
+    focusRings: [
+      { radiusKm: 2, points: 8 },
+      { radiusKm: 6, points: 8 },
+    ],
+  },
 }
 
 export function detailPointCount(detail: DetailLevel): number {
-  const [columns, rows] = GRID_SIZE[detail]
-  return columns * rows
+  return GRID_CONFIGURATION[detail].budget
 }
 
-export function createAnchorGrid(
+function createRegularGrid(
   bounds: MapBounds,
-  detail: DetailLevel,
+  [columns, rows]: [number, number],
 ): Coordinates[] {
-  const [columns, rows] = GRID_SIZE[detail]
   const [south, west] = bounds.southWest
   const [north, east] = bounds.northEast
   const result: Coordinates[] = []
@@ -36,23 +62,108 @@ export function createAnchorGrid(
   return result
 }
 
+function createFocusRing(
+  focus: Coordinates,
+  radiusKm: number,
+  pointCount: number,
+): Coordinates[] {
+  const latitudeKm = 111.32
+  const longitudeKm = latitudeKm * Math.cos((focus[0] * Math.PI) / 180)
+
+  return Array.from({ length: pointCount }, (_, index) => {
+    const angle = (2 * Math.PI * index) / pointCount
+    return [
+      focus[0] + (Math.sin(angle) * radiusKm) / latitudeKm,
+      focus[1] + (Math.cos(angle) * radiusKm) / longitudeKm,
+    ]
+  })
+}
+
+function isInsideBounds(point: Coordinates, bounds: MapBounds): boolean {
+  return (
+    point[0] >= bounds.southWest[0] &&
+    point[0] <= bounds.northEast[0] &&
+    point[1] >= bounds.southWest[1] &&
+    point[1] <= bounds.northEast[1]
+  )
+}
+
+function uniquePoints(points: Coordinates[]): Coordinates[] {
+  const seen = new Set<string>()
+  return points.filter((point) => {
+    const key = `${point[0].toFixed(6)}:${point[1].toFixed(6)}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
+export function createAnchorGrid(
+  bounds: MapBounds,
+  detail: DetailLevel,
+  focus?: Coordinates,
+): Coordinates[] {
+  const configuration = GRID_CONFIGURATION[detail]
+  if (!focus) return createRegularGrid(bounds, configuration.fallbackGrid)
+
+  const focused = configuration.focusRings.flatMap(({ radiusKm, points }) =>
+    createFocusRing(focus, radiusKm, points),
+  )
+  const candidates = uniquePoints([
+    ...focused.filter((point) => isInsideBounds(point, bounds)),
+    ...createRegularGrid(bounds, configuration.coverageGrid),
+    ...createRegularGrid(bounds, configuration.fallbackGrid),
+  ])
+
+  return candidates.slice(0, configuration.budget)
+}
+
+export function includeOriginSample(
+  samples: TravelSample[],
+  origin: Coordinates,
+): TravelSample[] {
+  const withoutOrigin = samples.filter(
+    ({ coordinates }) =>
+      Math.abs(coordinates[0] - origin[0]) > 1e-7 ||
+      Math.abs(coordinates[1] - origin[1]) > 1e-7,
+  )
+
+  return [
+    { coordinates: origin, minutes: 0, fromCache: false },
+    ...withoutOrigin,
+  ]
+}
+
 export function interpolateMinutes(
   pagePoint: [number, number],
   samples: Array<TravelSample & { page: [number, number] }>,
 ): number | null {
   if (samples.length === 0) return null
 
-  let weightedMinutes = 0
-  let totalWeight = 0
-
+  const nearest: Array<{ sample: TravelSample; distanceSquared: number }> = []
   for (const sample of samples) {
     const dx = sample.page[0] - pagePoint[0]
     const dy = sample.page[1] - pagePoint[1]
     const distanceSquared = dx * dx + dy * dy
-
     if (distanceSquared < 4) return sample.minutes
 
-    const weight = 1 / Math.pow(distanceSquared, 0.9)
+    const insertAt = nearest.findIndex(
+      (candidate) => distanceSquared < candidate.distanceSquared,
+    )
+    if (insertAt === -1) {
+      if (nearest.length < 4) nearest.push({ sample, distanceSquared })
+      continue
+    }
+
+    nearest.splice(insertAt, 0, { sample, distanceSquared })
+    if (nearest.length > 4) nearest.pop()
+  }
+
+  let weightedMinutes = 0
+  let totalWeight = 0
+
+  for (const { sample, distanceSquared } of nearest) {
+    const weight = 1 / Math.pow(distanceSquared, 1.05)
     weightedMinutes += sample.minutes * weight
     totalWeight += weight
   }
