@@ -51,10 +51,16 @@ export function heatBandForMinutes(minutes: number): HeatBand {
   return HEAT_BANDS.find((band) => normalized <= band.maxMinutes) ?? HEAT_BANDS.at(-1)!
 }
 
-export function colorForMinutes(minutes: number, alpha = 0.46): string {
+export function rgbForMinutes(minutes: number): readonly [number, number, number] {
   const color = heatBandForMinutes(minutes).color
-  const red = Number.parseInt(color.slice(1, 3), 16)
-  const green = Number.parseInt(color.slice(3, 5), 16)
-  const blue = Number.parseInt(color.slice(5, 7), 16)
+  return [
+    Number.parseInt(color.slice(1, 3), 16),
+    Number.parseInt(color.slice(3, 5), 16),
+    Number.parseInt(color.slice(5, 7), 16),
+  ]
+}
+
+export function colorForMinutes(minutes: number, alpha = 0.46): string {
+  const [red, green, blue] = rgbForMinutes(minutes)
   return `rgba(${red}, ${green}, ${blue}, ${alpha})`
 }
