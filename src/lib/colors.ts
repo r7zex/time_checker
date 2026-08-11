@@ -4,19 +4,47 @@ export interface HeatBand {
   label: string
 }
 
-export const HEAT_BANDS: readonly HeatBand[] = [
-  { maxMinutes: 6, color: '#66c75d', label: '0–6' },
-  { maxMinutes: 12, color: '#8fd269', label: '6–12' },
-  { maxMinutes: 18, color: '#b9d968', label: '12–18' },
-  { maxMinutes: 24, color: '#dedb60', label: '18–24' },
-  { maxMinutes: 30, color: '#f6d35b', label: '24–30' },
-  { maxMinutes: 36, color: '#f6bc58', label: '30–36' },
-  { maxMinutes: 42, color: '#f69d56', label: '36–42' },
-  { maxMinutes: 48, color: '#f17e5b', label: '42–48' },
-  { maxMinutes: 54, color: '#e86b69', label: '48–54' },
-  { maxMinutes: 60, color: '#cf6285', label: '54–60' },
-  { maxMinutes: Number.POSITIVE_INFINITY, color: '#ae65aa', label: '60+' },
+const COLOR_STOPS = [
+  { minutes: 0, color: '#49b94f' },
+  { minutes: 6, color: '#66c75d' },
+  { minutes: 12, color: '#8fd269' },
+  { minutes: 18, color: '#b9d968' },
+  { minutes: 24, color: '#dedb60' },
+  { minutes: 30, color: '#f6d35b' },
+  { minutes: 36, color: '#f6bc58' },
+  { minutes: 42, color: '#f69d56' },
+  { minutes: 48, color: '#f17e5b' },
+  { minutes: 54, color: '#e86b69' },
+  { minutes: 60, color: '#cf6285' },
 ] as const
+
+function interpolateHexColor(minutes: number): string {
+  const upperIndex = COLOR_STOPS.findIndex((stop) => minutes <= stop.minutes)
+  const upper = COLOR_STOPS[Math.max(1, upperIndex)]
+  const lower = COLOR_STOPS[Math.max(0, upperIndex - 1)]
+  const ratio = (minutes - lower.minutes) / (upper.minutes - lower.minutes)
+  const channels = [1, 3, 5].map((offset) => {
+    const from = Number.parseInt(lower.color.slice(offset, offset + 2), 16)
+    const to = Number.parseInt(upper.color.slice(offset, offset + 2), 16)
+    return Math.round(from + (to - from) * ratio)
+      .toString(16)
+      .padStart(2, '0')
+  })
+  return `#${channels.join('')}`
+}
+
+export const HEAT_BANDS: readonly HeatBand[] = [
+  ...Array.from({ length: 20 }, (_, index) => {
+    const minMinutes = index * 3
+    const maxMinutes = minMinutes + 3
+    return {
+      maxMinutes,
+      color: interpolateHexColor(maxMinutes),
+      label: `${minMinutes}–${maxMinutes}`,
+    }
+  }),
+  { maxMinutes: Number.POSITIVE_INFINITY, color: '#ae65aa', label: '60+' },
+]
 
 export function heatBandForMinutes(minutes: number): HeatBand {
   const normalized = Math.max(0, minutes)
