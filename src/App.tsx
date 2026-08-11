@@ -37,6 +37,8 @@ export default function App() {
   const [direction, setDirection] = useState<Direction>('to')
   const [transport, setTransport] = useState<TransportMode>('metro')
   const [detail, setDetail] = useState<DetailLevel>('balanced')
+  const [heatOpacity, setHeatOpacity] = useState(0.46)
+  const [targetMinutes, setTargetMinutes] = useState(30)
   const [samples, setSamples] = useState<TravelSample[]>([])
   const [progress, setProgress] = useState<CalculationProgress>(EMPTY_PROGRESS)
   const [isCalculating, setIsCalculating] = useState(false)
@@ -92,6 +94,9 @@ export default function App() {
         <OpenMap
           point={point}
           samples={samples}
+          detail={detail}
+          heatOpacity={heatOpacity}
+          targetMinutes={targetMinutes}
           onPointChange={handlePointChange}
           onBoundsChange={setBounds}
           onError={setError}
@@ -114,6 +119,8 @@ export default function App() {
         direction={direction}
         transport={transport}
         detail={detail}
+        heatOpacity={heatOpacity}
+        targetMinutes={targetMinutes}
         hasPoint={Boolean(point)}
         isCalculating={isCalculating}
         progress={progress.total ? progress : { ...progress, total: detailPointCount(detail) }}
@@ -131,6 +138,8 @@ export default function App() {
           setDetail(value)
           handleConfigurationChange()
         }}
+        onHeatOpacityChange={setHeatOpacity}
+        onTargetMinutesChange={setTargetMinutes}
         onCalculate={handleCalculate}
       />
       <HeatLegend />

@@ -22,7 +22,8 @@ body,
 }
 
 button,
-input {
+input,
+output {
   font: inherit;
 }
 
@@ -84,7 +85,7 @@ button:focus-visible,
   width: 338px;
   max-height: 850px;
   flex-direction: column;
-  gap: 19px;
+  gap: 16px;
   padding: 25px 24px 22px;
   overflow-y: auto;
   background: #ffffff;
@@ -215,6 +216,57 @@ button:focus-visible,
 
 .transport-list svg {
   flex: 0 0 22px;
+}
+
+.display-controls {
+  display: grid;
+  gap: 13px;
+}
+
+.range-control {
+  display: grid;
+  gap: 8px;
+  color: #445069;
+  font-size: 12px;
+}
+
+.range-control__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.range-control output {
+  color: #175fbf;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.range-control input[type='range'] {
+  width: 100%;
+  height: 20px;
+  margin: 0;
+  accent-color: #1f6fe5;
+  cursor: pointer;
+}
+
+.boundary-key {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: #778197;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.boundary-key > span {
+  width: 22px;
+  height: 8px;
+  flex: 0 0 22px;
+  margin-top: 3px;
+  border-top: 3px solid #168bff;
+  filter: drop-shadow(0 0 1px #fff);
 }
 
 .calculate-button {
@@ -592,6 +644,14 @@ button:focus-visible,
   .control-group legend {
     margin-bottom: 5px;
     font-size: 14px;
+  }
+
+  .display-controls {
+    gap: 9px;
+  }
+
+  .boundary-key {
+    display: none;
   }
 
   .segmented button,

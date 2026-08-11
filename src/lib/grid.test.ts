@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createGridCells, detailPointCount } from './grid'
+import { createGridCells, detailPointCount, gridSize } from './grid'
 
 describe('dense local grid', () => {
   const bounds = {
@@ -8,6 +8,7 @@ describe('dense local grid', () => {
   }
 
   it('uses cells with 64 times less area', () => {
+    expect(gridSize('balanced')).toEqual([512, 320])
     expect(detailPointCount('fast')).toBe(55_296)
     expect(detailPointCount('balanced')).toBe(163_840)
     expect(detailPointCount('precise')).toBe(368_640)
