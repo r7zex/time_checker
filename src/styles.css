@@ -38,7 +38,7 @@ button:focus-visible,
 
 .app-shell,
 .map-stage,
-.yandex-map,
+.open-map,
 .demo-map,
 .setup-state {
   position: relative;
@@ -51,7 +51,7 @@ button:focus-visible,
   background: #edf2ee;
 }
 
-.yandex-map {
+.open-map {
   z-index: 0;
 }
 

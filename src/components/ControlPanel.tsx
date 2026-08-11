@@ -1,12 +1,9 @@
 import type { ComponentType, SVGProps } from 'react'
 import {
-  BusIcon,
   ClockIcon,
   CrosshairIcon,
   MetroIcon,
   PinIcon,
-  TramIcon,
-  TransitIcon,
   WalkIcon,
 } from './icons'
 import type {
@@ -38,11 +35,8 @@ interface TransportOption {
 }
 
 const transportOptions: TransportOption[] = [
-  { value: 'all', label: 'Весь транспорт', Icon: TransitIcon },
-  { value: 'metro', label: 'Метро', Icon: MetroIcon },
-  { value: 'bus', label: 'Автобус', Icon: BusIcon },
-  { value: 'tram', label: 'Трамвай', Icon: TramIcon },
-  { value: 'walk', label: 'Пешком', Icon: WalkIcon },
+  { value: 'metro', label: 'Метро + пешком', Icon: MetroIcon },
+  { value: 'walk', label: 'Только пешком', Icon: WalkIcon },
 ]
 
 const detailOptions: Array<{ value: DetailLevel; label: string }> = [
@@ -69,9 +63,9 @@ export function ControlPanel({
     ? Math.round((progress.completed / progress.total) * 100)
     : 0
   const status = isCalculating
-    ? `${progress.completed} из ${progress.total} точек`
+    ? `Считаем ${progress.total} точек локально`
     : progress.total
-      ? `${progress.total} опорных точек · ${progress.apiRequests} запросов`
+      ? `${progress.total} точек · без маршрутных API-запросов`
       : 'Расчёт начнётся после выбора точки'
 
   return (
@@ -166,9 +160,7 @@ export function ControlPanel({
         <div className="progress-track" aria-hidden="true">
           <span style={{ width: `${progressPercent}%` }} />
         </div>
-        {progress.cached > 0 ? (
-          <small>{progress.cached} точек взято из локального кеша</small>
-        ) : null}
+        <small>OSM-карта · открытый граф метро Wikidata</small>
       </div>
     </aside>
   )
