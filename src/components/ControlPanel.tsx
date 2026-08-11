@@ -17,6 +17,8 @@ interface ControlPanelProps {
   direction: Direction
   transport: TransportMode
   detail: DetailLevel
+  heatOpacity: number
+  targetMinutes: number
   hasPoint: boolean
   isCalculating: boolean
   progress: CalculationProgress
@@ -25,6 +27,8 @@ interface ControlPanelProps {
   onDirectionChange: (direction: Direction) => void
   onTransportChange: (transport: TransportMode) => void
   onDetailChange: (detail: DetailLevel) => void
+  onHeatOpacityChange: (opacity: number) => void
+  onTargetMinutesChange: (minutes: number) => void
   onCalculate: () => void
 }
 
@@ -49,6 +53,8 @@ export function ControlPanel({
   direction,
   transport,
   detail,
+  heatOpacity,
+  targetMinutes,
   hasPoint,
   isCalculating,
   progress,
@@ -57,6 +63,8 @@ export function ControlPanel({
   onDirectionChange,
   onTransportChange,
   onDetailChange,
+  onHeatOpacityChange,
+  onTargetMinutesChange,
   onCalculate,
 }: ControlPanelProps) {
   const progressPercent = progress.total
@@ -143,6 +151,44 @@ export function ControlPanel({
             </button>
           ))}
         </div>
+      </fieldset>
+
+      <fieldset className="control-group display-controls">
+        <legend>Отображение</legend>
+        <label className="range-control">
+          <span className="range-control__header">
+            <span>Непрозрачность heatmap</span>
+            <output>{Math.round(heatOpacity * 100)}%</output>
+          </span>
+          <input
+            type="range"
+            min="0"
+            max="0.8"
+            step="0.05"
+            value={heatOpacity}
+            aria-label="Непрозрачность heatmap"
+            onChange={(event) => onHeatOpacityChange(Number(event.target.value))}
+          />
+        </label>
+        <label className="range-control">
+          <span className="range-control__header">
+            <span>Граница доступности</span>
+            <output>до {targetMinutes} мин</output>
+          </span>
+          <input
+            type="range"
+            min="3"
+            max="60"
+            step="3"
+            value={targetMinutes}
+            aria-label="Время границы доступности"
+            onChange={(event) => onTargetMinutesChange(Number(event.target.value))}
+          />
+        </label>
+        <span className="boundary-key">
+          <span aria-hidden="true" />
+          Голубая линия показывает общую границу выбранной зоны
+        </span>
       </fieldset>
 
       <button
