@@ -5,10 +5,12 @@ interface GridCell {
   cellBounds: MapBounds
 }
 
+const CELL_SIDE_SCALE = 8
+
 const GRID_SIZE: Record<DetailLevel, [columns: number, rows: number]> = {
-  fast: [36, 24],
-  balanced: [64, 40],
-  precise: [96, 60],
+  fast: [36 * CELL_SIDE_SCALE, 24 * CELL_SIDE_SCALE],
+  balanced: [64 * CELL_SIDE_SCALE, 40 * CELL_SIDE_SCALE],
+  precise: [96 * CELL_SIDE_SCALE, 60 * CELL_SIDE_SCALE],
 }
 
 export function detailPointCount(detail: DetailLevel): number {
@@ -48,4 +50,3 @@ export function createGridCells(
 
   return cells
 }
-
