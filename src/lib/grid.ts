@@ -5,16 +5,22 @@ interface GridCell {
   cellBounds: MapBounds
 }
 
+export type GridSize = readonly [columns: number, rows: number]
+
 const CELL_SIDE_SCALE = 8
 
-const GRID_SIZE: Record<DetailLevel, [columns: number, rows: number]> = {
+const GRID_SIZE: Record<DetailLevel, GridSize> = {
   fast: [36 * CELL_SIDE_SCALE, 24 * CELL_SIDE_SCALE],
   balanced: [64 * CELL_SIDE_SCALE, 40 * CELL_SIDE_SCALE],
   precise: [96 * CELL_SIDE_SCALE, 60 * CELL_SIDE_SCALE],
 }
 
+export function gridSize(detail: DetailLevel): GridSize {
+  return GRID_SIZE[detail]
+}
+
 export function detailPointCount(detail: DetailLevel): number {
-  const [columns, rows] = GRID_SIZE[detail]
+  const [columns, rows] = gridSize(detail)
   return columns * rows
 }
 
@@ -22,7 +28,7 @@ export function createGridCells(
   bounds: MapBounds,
   detail: DetailLevel,
 ): GridCell[] {
-  const [columns, rows] = GRID_SIZE[detail]
+  const [columns, rows] = gridSize(detail)
   const [south, west] = bounds.southWest
   const [north, east] = bounds.northEast
   const latitudeStep = (north - south) / rows
