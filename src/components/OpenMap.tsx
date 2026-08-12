@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   Map as MapLibreMap,
   NavigationControl,
-  type MapMouseEvent,
   type StyleSpecification,
 } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
@@ -90,6 +89,7 @@ const METRO_ROUTE_GROUPS = (() => {
 const METRO_LABEL_STATIONS = [...METRO_OVERLAY_STATIONS].sort((left, right) => {
   if (left.name === PRIORITY_STATION) return -1
   if (right.name === PRIORITY_STATION) return 1
+  if (left.isKey !== right.isKey) return left.isKey ? -1 : 1
   return left.name.localeCompare(right.name, 'ru')
 })
 
@@ -152,36 +152,40 @@ function appendMetroSegments(
 
 function drawMetroOverlay(context: CanvasRenderingContext2D, map: MapLibreMap) {
   context.save()
-  context.globalAlpha = 0.88
+  context.globalAlpha = 1
   context.lineCap = 'round'
   context.lineJoin = 'round'
+  const zoom = map.getZoom()
 
   context.beginPath()
   appendMetroSegments(context, map, METRO_ROUTE_SEGMENTS)
-  context.strokeStyle = 'rgba(255, 255, 255, 0.94)'
-  context.lineWidth = 5.2
+  context.strokeStyle = 'rgba(255, 255, 255, 0.98)'
+  context.lineWidth = zoom < 9 ? 6.8 : 8.2
+  context.shadowColor = 'rgba(10, 31, 62, 0.28)'
+  context.shadowBlur = 2
   context.stroke()
+  context.shadowColor = 'transparent'
 
   for (const [color, segments] of METRO_ROUTE_GROUPS) {
     context.beginPath()
     appendMetroSegments(context, map, segments)
     context.strokeStyle = color
-    context.lineWidth = 2.6
+    context.lineWidth = zoom < 9 ? 3.5 : 4.4
     context.stroke()
   }
 
-  const zoom = map.getZoom()
   const visibleBounds = map.getBounds()
-  if (zoom >= 10) {
+  if (zoom >= 8) {
     for (const station of METRO_OVERLAY_STATIONS) {
       if (!isVisible(station.coordinates, visibleBounds)) continue
       const position = map.project([station.coordinates[1], station.coordinates[0]])
       context.beginPath()
-      context.arc(position.x, position.y, zoom >= 13 ? 3 : 2.1, 0, Math.PI * 2)
+      const radius = zoom >= 13 ? 3.6 : zoom >= 10 ? 2.7 : 1.8
+      context.arc(position.x, position.y, radius, 0, Math.PI * 2)
       context.fillStyle = '#ffffff'
       context.fill()
       context.strokeStyle = station.color
-      context.lineWidth = 1.5
+      context.lineWidth = zoom >= 10 ? 1.8 : 1.2
       context.stroke()
     }
   }
@@ -189,7 +193,11 @@ function drawMetroOverlay(context: CanvasRenderingContext2D, map: MapLibreMap) {
   const occupied = new Set<string>()
   for (const station of METRO_LABEL_STATIONS) {
     const isPriority = station.name === PRIORITY_STATION
-    if ((!isPriority && zoom < 13) || (isPriority && zoom < 10.5)) continue
+    const canShow =
+      (isPriority && zoom >= 9.5) ||
+      (station.isKey && zoom >= 11) ||
+      zoom >= 13
+    if (!canShow) continue
     if (!isVisible(station.coordinates, visibleBounds)) continue
 
     const position = map.project([station.coordinates[1], station.coordinates[0]])
@@ -197,11 +205,11 @@ function drawMetroOverlay(context: CanvasRenderingContext2D, map: MapLibreMap) {
     if (!isPriority && occupied.has(key)) continue
     occupied.add(key)
 
-    context.font = `${isPriority ? 750 : 650} ${isPriority ? 12 : 10}px Inter, sans-serif`
+    context.font = `${isPriority ? 800 : 700} ${isPriority ? 13 : 10}px Inter, sans-serif`
     context.textAlign = 'left'
     context.textBaseline = 'middle'
-    context.lineWidth = 3.5
-    context.strokeStyle = 'rgba(255, 255, 255, 0.96)'
+    context.lineWidth = isPriority ? 4.6 : 3.8
+    context.strokeStyle = 'rgba(255, 255, 255, 0.98)'
     context.strokeText(station.name, position.x + 5, position.y - 5)
     context.fillStyle = isPriority ? '#0e315f' : '#253652'
     context.fillText(station.name, position.x + 5, position.y - 5)
@@ -456,6 +464,9 @@ export function OpenMap({
     if (!node) return
 
     let resizeObserver: ResizeObserver | null = null
+    let pointerStart: { x: number; y: number } | null = null
+    let handlePointerDown: ((event: PointerEvent) => void) | null = null
+    let handleMapClick: ((event: MouseEvent) => void) | null = null
 
     try {
       const map = new MapLibreMap({
@@ -473,9 +484,42 @@ export function OpenMap({
       map.touchZoomRotate.disableRotation()
       map.addControl(new NavigationControl({ showCompass: false }), 'top-right')
 
-      map.on('click', (event: MapMouseEvent) => {
-        onPointChange([event.lngLat.lat, event.lngLat.lng])
+      handlePointerDown = (event: PointerEvent) => {
+        pointerStart = { x: event.clientX, y: event.clientY }
+      }
+      handleMapClick = (event: MouseEvent) => {
+        const target = event.target
+        if (
+          target instanceof Element &&
+          target.closest('.maplibregl-control-container')
+        ) {
+          return
+        }
+        if (
+          pointerStart &&
+          Math.hypot(
+            event.clientX - pointerStart.x,
+            event.clientY - pointerStart.y,
+          ) > 8
+        ) {
+          pointerStart = null
+          return
+        }
+
+        pointerStart = null
+        const rect = node.getBoundingClientRect()
+        const longitudeLatitude = map.unproject([
+          event.clientX - rect.left,
+          event.clientY - rect.top,
+        ])
+        onPointChange([longitudeLatitude.lat, longitudeLatitude.lng])
+      }
+
+      node.addEventListener('pointerdown', handlePointerDown, {
+        capture: true,
+        passive: true,
       })
+      node.addEventListener('click', handleMapClick, true)
       map.on('move', scheduleDraw)
       map.on('moveend', publishBounds)
       map.on('load', () => {
@@ -499,6 +543,10 @@ export function OpenMap({
 
     return () => {
       resizeObserver?.disconnect()
+      if (handlePointerDown) {
+        node.removeEventListener('pointerdown', handlePointerDown, true)
+      }
+      if (handleMapClick) node.removeEventListener('click', handleMapClick, true)
       if (frameRef.current !== null) window.cancelAnimationFrame(frameRef.current)
       mapRef.current?.remove()
       mapRef.current = null

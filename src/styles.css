@@ -56,6 +56,14 @@ button:focus-visible,
   z-index: 0;
 }
 
+.open-map .maplibregl-canvas {
+  cursor: crosshair;
+}
+
+.open-map .maplibregl-canvas:active {
+  cursor: grabbing;
+}
+
 .heat-canvas {
   position: absolute;
   inset: 0;
@@ -124,10 +132,30 @@ button:focus-visible,
 .point-prompt svg {
   width: 20px;
   height: 20px;
+  flex: 0 0 auto;
 }
 
 .point-prompt--ready {
   color: #1c704f;
+}
+
+.point-prompt__copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.point-prompt__copy strong {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.point-prompt__copy small {
+  color: #778197;
+  font-size: 11px;
+  line-height: 1.25;
 }
 
 .control-group {

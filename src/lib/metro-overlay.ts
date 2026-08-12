@@ -28,6 +28,7 @@ interface MetroOverlayData {
 
 export interface MetroOverlayStation extends MetroStationRecord {
   color: string
+  isKey: boolean
 }
 
 export interface MetroRouteSegment {
@@ -42,6 +43,17 @@ export interface MetroRouteSegment {
 const data = metroJson as unknown as MetroOverlayData
 const lineById = new Map(data.lines.map((line) => [line.id, line]))
 const stationById = new Map(data.stations.map((station) => [station.id, station]))
+const stationNameCount = new Map<string, number>()
+const trackDegree = new Map<string, number>()
+
+for (const station of data.stations) {
+  stationNameCount.set(station.name, (stationNameCount.get(station.name) ?? 0) + 1)
+}
+
+for (const edge of data.edges) {
+  trackDegree.set(edge.from, (trackDegree.get(edge.from) ?? 0) + 1)
+  trackDegree.set(edge.to, (trackDegree.get(edge.to) ?? 0) + 1)
+}
 
 function stationPair(left: string, right: string): string {
   return left < right ? `${left}|${right}` : `${right}|${left}`
@@ -53,6 +65,10 @@ export const METRO_OVERLAY_STATIONS: readonly MetroOverlayStation[] = data.stati
   (station) => ({
     ...station,
     color: lineById.get(station.lineIds[0])?.color ?? '#65718a',
+    isKey:
+      station.name === 'ЗИЛ' ||
+      (stationNameCount.get(station.name) ?? 0) > 1 ||
+      (trackDegree.get(station.id) ?? 0) <= 1,
   }),
 )
 

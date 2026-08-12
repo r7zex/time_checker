@@ -121,7 +121,7 @@ export default function App() {
         detail={detail}
         heatOpacity={heatOpacity}
         targetMinutes={targetMinutes}
-        hasPoint={Boolean(point)}
+        point={point}
         isCalculating={isCalculating}
         progress={progress.total ? progress : { ...progress, total: detailPointCount(detail) }}
         error={error}

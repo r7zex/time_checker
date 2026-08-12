@@ -8,6 +8,7 @@ import {
 } from './icons'
 import type {
   CalculationProgress,
+  Coordinates,
   DetailLevel,
   Direction,
   TransportMode,
@@ -19,7 +20,7 @@ interface ControlPanelProps {
   detail: DetailLevel
   heatOpacity: number
   targetMinutes: number
-  hasPoint: boolean
+  point: Coordinates | null
   isCalculating: boolean
   progress: CalculationProgress
   error: string | null
@@ -55,7 +56,7 @@ export function ControlPanel({
   detail,
   heatOpacity,
   targetMinutes,
-  hasPoint,
+  point,
   isCalculating,
   progress,
   error,
@@ -67,6 +68,7 @@ export function ControlPanel({
   onTargetMinutesChange,
   onCalculate,
 }: ControlPanelProps) {
+  const hasPoint = point !== null
   const progressPercent = progress.total
     ? Math.round((progress.completed / progress.total) * 100)
     : 0
@@ -89,7 +91,14 @@ export function ControlPanel({
 
       <div className={`point-prompt ${hasPoint ? 'point-prompt--ready' : ''}`}>
         <PinIcon />
-        <span>{hasPoint ? 'Точка выбрана' : 'Выберите точку на карте'}</span>
+        <span className="point-prompt__copy">
+          <strong>
+            {point
+              ? `${point[0].toFixed(5)}, ${point[1].toFixed(5)}`
+              : 'Выберите точку на карте'}
+          </strong>
+          {point ? <small>Нажмите на карту, чтобы изменить</small> : null}
+        </span>
       </div>
 
       <fieldset className="control-group">
