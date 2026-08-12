@@ -21,4 +21,19 @@ describe('current metro overlay', () => {
   it('uses only track edges from the active metro snapshot', () => {
     expect(METRO_ROUTE_SEGMENTS).toHaveLength(261)
   })
+
+  it('keeps every active metro line in the visible overlay', () => {
+    expect(new Set(METRO_ROUTE_SEGMENTS.map((segment) => segment.lineId))).toHaveLength(15)
+  })
+
+  it('marks ZIL and interchange stations for earlier labels', () => {
+    expect(METRO_OVERLAY_STATIONS.find((station) => station.name === 'ЗИЛ')?.isKey).toBe(
+      true,
+    )
+    expect(
+      METRO_OVERLAY_STATIONS.some(
+        (station) => station.name === 'Новаторская' && station.isKey,
+      ),
+    ).toBe(true)
+  })
 })
