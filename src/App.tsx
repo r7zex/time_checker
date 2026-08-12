@@ -1,8 +1,9 @@
-import { lazy, Suspense, useCallback, useState } from 'react'
+import { lazy, Suspense, useCallback, useRef, useState } from 'react'
 import { ControlPanel } from './components/ControlPanel'
 import { HeatLegend } from './components/HeatLegend'
 import { SettingsIcon } from './components/icons'
 import { detailPointCount } from './lib/grid'
+import { updateSelectedPoints } from './lib/point-selection'
 import { calculateTravelSamples } from './lib/travel'
 import type {
   CalculationProgress,
@@ -32,13 +33,17 @@ const OpenMap = lazy(() =>
 )
 
 export default function App() {
-  const [point, setPoint] = useState<Coordinates | null>(CENTRAL_TELEGRAPH)
+  const [points, setPoints] = useState<Coordinates[]>([CENTRAL_TELEGRAPH])
   const [bounds, setBounds] = useState<MapBounds>(FALLBACK_BOUNDS)
   const [direction, setDirection] = useState<Direction>('to')
   const [transport, setTransport] = useState<TransportMode>('metro')
   const [detail, setDetail] = useState<DetailLevel>('balanced')
   const [heatOpacity, setHeatOpacity] = useState(0.46)
   const [targetMinutes, setTargetMinutes] = useState(30)
+  const [showIsochrone, setShowIsochrone] = useState(true)
+  const [isochroneOpacity, setIsochroneOpacity] = useState(1)
+  const [isAddingPoint, setIsAddingPoint] = useState(false)
+  const isAddingPointRef = useRef(false)
   const [samples, setSamples] = useState<TravelSample[]>([])
   const [progress, setProgress] = useState<CalculationProgress>(EMPTY_PROGRESS)
   const [isCalculating, setIsCalculating] = useState(false)
@@ -52,16 +57,33 @@ export default function App() {
   }, [])
 
   const handlePointChange = useCallback((coordinates: Coordinates) => {
-    setPoint(coordinates)
+    const shouldAddPoint = isAddingPointRef.current
+    setPoints((current) =>
+      updateSelectedPoints(current, coordinates, shouldAddPoint),
+    )
+    isAddingPointRef.current = false
+    setIsAddingPoint(false)
+    setSamples([])
+    setProgress(EMPTY_PROGRESS)
+    setError(null)
+  }, [])
+
+  const handleAddingPointChange = useCallback((isAdding: boolean) => {
+    isAddingPointRef.current = isAdding
+    setIsAddingPoint(isAdding)
+  }, [])
+
+  const handleRemovePoint = useCallback((index: number) => {
+    setPoints((current) => current.filter((_, pointIndex) => pointIndex !== index))
     setSamples([])
     setProgress(EMPTY_PROGRESS)
     setError(null)
   }, [])
 
   const handleCalculate = useCallback(async () => {
-    if (!point || isCalculating) return
+    if (points.length === 0 || isCalculating) return
 
-    const total = detailPointCount(detail)
+    const total = detailPointCount(detail) * points.length
     setIsCalculating(true)
     setError(null)
     setSamples([])
@@ -69,11 +91,11 @@ export default function App() {
 
     try {
       await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()))
-      const calculated = calculateTravelSamples(point, bounds, detail, transport)
+      const calculated = calculateTravelSamples(points, bounds, detail, transport)
       setSamples(calculated)
       setProgress({
-        completed: calculated.length,
-        total: calculated.length,
+        completed: calculated.length * points.length,
+        total,
         apiRequests: 0,
         cached: 0,
       })
@@ -86,17 +108,19 @@ export default function App() {
     } finally {
       setIsCalculating(false)
     }
-  }, [bounds, detail, isCalculating, point, transport])
+  }, [bounds, detail, isCalculating, points, transport])
 
   return (
     <main className="app-shell">
       <Suspense fallback={<div className="map-loading">Загружаем открытую карту…</div>}>
         <OpenMap
-          point={point}
+          points={points}
           samples={samples}
           detail={detail}
           heatOpacity={heatOpacity}
           targetMinutes={targetMinutes}
+          showIsochrone={showIsochrone}
+          isochroneOpacity={isochroneOpacity}
           onPointChange={handlePointChange}
           onBoundsChange={setBounds}
           onError={setError}
@@ -121,9 +145,19 @@ export default function App() {
         detail={detail}
         heatOpacity={heatOpacity}
         targetMinutes={targetMinutes}
-        point={point}
+        showIsochrone={showIsochrone}
+        isochroneOpacity={isochroneOpacity}
+        points={points}
+        isAddingPoint={isAddingPoint}
         isCalculating={isCalculating}
-        progress={progress.total ? progress : { ...progress, total: detailPointCount(detail) }}
+        progress={
+          progress.total
+            ? progress
+            : {
+                ...progress,
+                total: detailPointCount(detail) * Math.max(points.length, 1),
+              }
+        }
         error={error}
         isCollapsed={!controlsOpen}
         onDirectionChange={(value) => {
@@ -140,6 +174,10 @@ export default function App() {
         }}
         onHeatOpacityChange={setHeatOpacity}
         onTargetMinutesChange={setTargetMinutes}
+        onShowIsochroneChange={setShowIsochrone}
+        onIsochroneOpacityChange={setIsochroneOpacity}
+        onAddingPointChange={handleAddingPointChange}
+        onRemovePoint={handleRemovePoint}
         onCalculate={handleCalculate}
       />
       <HeatLegend />

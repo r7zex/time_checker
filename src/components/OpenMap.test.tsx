@@ -6,11 +6,13 @@ describe('OpenMap visual layer structure', () => {
   it('keeps the overlay canvas outside the DOM container owned by MapLibre', () => {
     const markup = renderToStaticMarkup(
       <OpenMap
-        point={[55.758272, 37.611014]}
+        points={[[55.758272, 37.611014]]}
         samples={[]}
         detail="fast"
         heatOpacity={0.46}
         targetMinutes={30}
+        showIsochrone={true}
+        isochroneOpacity={1}
         onPointChange={vi.fn()}
         onBoundsChange={vi.fn()}
         onError={vi.fn()}

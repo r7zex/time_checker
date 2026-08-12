@@ -22,25 +22,39 @@ export function calculateTravelMinutes(
   return Math.min(directWalk, metroMinutesToPoint(destination, metroCosts))
 }
 
+export function combinedTravelMinutes(pointMinutes: readonly number[]): number {
+  return pointMinutes.length === 0 ? 0 : Math.max(...pointMinutes)
+}
+
 export function calculateTravelSamples(
-  origin: Coordinates,
+  points: readonly Coordinates[],
   bounds: MapBounds,
   detail: DetailLevel,
   transport: TransportMode,
 ): TravelSample[] {
-  const stationCosts =
-    transport === 'metro' ? createMetroCostField(origin) : undefined
+  if (points.length === 0) return []
 
-  return createGridCells(bounds, detail).map(({ coordinates, cellBounds }) => ({
-    coordinates,
-    cellBounds,
-    minutes: calculateTravelMinutes(
-      origin,
+  const stationCosts = points.map((point) =>
+    transport === 'metro' ? createMetroCostField(point) : undefined,
+  )
+
+  return createGridCells(bounds, detail).map(({ coordinates, cellBounds }) => {
+    const pointMinutes = points.map((point, index) =>
+      calculateTravelMinutes(
+        point,
+        coordinates,
+        transport,
+        stationCosts[index],
+      ),
+    )
+
+    return {
       coordinates,
-      transport,
-      stationCosts,
-    ),
-    fromCache: false,
-  }))
+      cellBounds,
+      minutes: combinedTravelMinutes(pointMinutes),
+      pointMinutes,
+      fromCache: false,
+    }
+  })
 }
 

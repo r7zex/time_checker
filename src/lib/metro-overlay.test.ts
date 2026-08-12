@@ -26,9 +26,9 @@ describe('current metro overlay', () => {
     expect(new Set(METRO_ROUTE_SEGMENTS.map((segment) => segment.lineId))).toHaveLength(15)
   })
 
-  it('marks ZIL and interchange stations for earlier labels', () => {
+  it('renders ZIL like an ordinary station while keeping interchange labels', () => {
     expect(METRO_OVERLAY_STATIONS.find((station) => station.name === 'ЗИЛ')?.isKey).toBe(
-      true,
+      false,
     )
     expect(
       METRO_OVERLAY_STATIONS.some(
