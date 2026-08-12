@@ -31,7 +31,7 @@ const STATION_ENTRY_MINUTES = 2.5
 const STATION_EXIT_MINUTES = 2
 const MAX_AUTOMATIC_TRANSFER_KM = 0.35
 const MAX_SAME_NAME_TRANSFER_KM = 0.65
-const MIN_TRANSFER_MINUTES = 3.5
+const MIN_TRANSFER_WALK_MINUTES = 6
 
 const NON_TRANSFER_NAMES = new Set(['Арбатская', 'Смоленская'])
 const EXPLICIT_TRANSFER_PAIRS = new Set([
@@ -110,9 +110,9 @@ function buildGraph(): GraphEdge[][] {
       if (!isTransfer(left, right, transferDistance)) continue
 
       const minutes = Math.max(
-        MIN_TRANSFER_MINUTES,
+        MIN_TRANSFER_WALK_MINUTES,
         walkingMinutes(left.coordinates, right.coordinates) + 2,
-      )
+      ) + TRAIN_WAIT_MINUTES
       addUndirectedEdge(graph, leftIndex, rightIndex, minutes)
     }
   }
