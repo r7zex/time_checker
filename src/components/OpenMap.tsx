@@ -523,10 +523,6 @@ export function OpenMap({
       map.on('move', scheduleDraw)
       map.on('moveend', publishBounds)
       map.on('load', () => {
-        const controls = node.querySelector('.maplibregl-control-container')
-        if (controls && canvasRef.current) {
-          node.insertBefore(canvasRef.current, controls)
-        }
         publishBounds()
         scheduleDraw()
         setIsReady(true)
@@ -559,9 +555,8 @@ export function OpenMap({
 
   return (
     <div className="map-stage">
-      <div className="open-map" ref={mapNodeRef} aria-label="Карта выбора точки">
-        <canvas className="heat-canvas" ref={canvasRef} aria-hidden="true" />
-      </div>
+      <div className="open-map" ref={mapNodeRef} aria-label="Карта выбора точки" />
+      <canvas className="heat-canvas" ref={canvasRef} aria-hidden="true" />
       {!isReady ? <div className="map-loading">Загружаем открытую карту…</div> : null}
     </div>
   )
