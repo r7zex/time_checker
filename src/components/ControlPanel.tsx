@@ -59,7 +59,7 @@ const detailOptions: Array<{ value: DetailLevel; label: string }> = [
 ]
 
 const MIN_TARGET_MINUTES = 1
-const MAX_TARGET_MINUTES = 60
+const MAX_TARGET_MINUTES = 120
 
 function clampTargetMinutes(minutes: number): number {
   return Math.min(

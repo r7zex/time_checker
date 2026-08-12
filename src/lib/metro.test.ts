@@ -19,6 +19,13 @@ describe('open Moscow metro graph', () => {
     expect(findStation('Площадь Революции')).not.toBeNull()
   })
 
+  it('uses the current passenger stations on the north-west blue section', () => {
+    expect(findStation('Мякинино', 'Q626941')).not.toBeNull()
+    expect(findStation('Троице-Лыково', 'Q626941')).toBeNull()
+    expect(findStation('Молодёжная', 'Q834540')).toBeNull()
+    expect(findStation('Крылатское', 'Q834540')).toBeNull()
+  })
+
   it('uses the metro graph for a long cross-city trip', () => {
     const medvedkovo = findStation('Медведково')
     expect(medvedkovo).not.toBeNull()
