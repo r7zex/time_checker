@@ -1,0 +1,6 @@
+{
+  "otpFeatures": {
+    "MinimumTransferTimeIsDefinitive": true,
+    "SandboxAPITravelTime": true
+  }
+}

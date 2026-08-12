@@ -1,0 +1,26 @@
+{
+  "configVersion": "time-checker-otp-1",
+  "server": {
+    "apiProcessingTimeout": "PT3M"
+  },
+  "routingDefaults": {
+    "walkSpeed": 1.33,
+    "walkReluctance": 1.0,
+    "stairsReluctance": 1.65,
+    "escalatorReluctance": 1.0,
+    "waitReluctance": 1.0,
+    "transferSlack": 30,
+    "boardSlackForMode": {
+      "SUBWAY": "PT30S"
+    },
+    "alightSlackForMode": {
+      "SUBWAY": "PT30S"
+    },
+    "accessEgress": {
+      "maxDuration": "PT45M",
+      "maxStopCount": 500
+    },
+    "streetRoutingTimeout": "PT30S",
+    "maxJourneyDuration": "PT3H"
+  }
+}
