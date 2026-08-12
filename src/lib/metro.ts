@@ -39,6 +39,10 @@ const EXPLICIT_TRANSFER_PAIRS = new Set([
   'Площадь Революции|Театральная',
 ])
 
+const TRANSFER_WALK_MINUTES = new Map<string, number>([
+  ['Каховская|Севастопольская', 2.5],
+])
+
 const metroData = metroJson as unknown as MetroData
 const stationIndexById = new Map(
   metroData.stations.map((station, index) => [station.id, index]),
@@ -109,10 +113,16 @@ function buildGraph(): GraphEdge[][] {
       const transferDistance = distanceKm(left.coordinates, right.coordinates)
       if (!isTransfer(left, right, transferDistance)) continue
 
-      const minutes = Math.max(
-        MIN_TRANSFER_WALK_MINUTES,
-        walkingMinutes(left.coordinates, right.coordinates) + 2,
-      ) + TRAIN_WAIT_MINUTES
+      const calibratedWalkMinutes = TRANSFER_WALK_MINUTES.get(
+        pairKey(left.name, right.name),
+      )
+      const transferWalkMinutes =
+        calibratedWalkMinutes ??
+        Math.max(
+          MIN_TRANSFER_WALK_MINUTES,
+          walkingMinutes(left.coordinates, right.coordinates) + 2,
+        )
+      const minutes = transferWalkMinutes + TRAIN_WAIT_MINUTES
       addUndirectedEdge(graph, leftIndex, rightIndex, minutes)
     }
   }
