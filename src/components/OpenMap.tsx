@@ -5,6 +5,7 @@ import {
   type StyleSpecification,
 } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import { cancelScheduledFrame } from '../lib/animation-frame'
 import { gridSize } from '../lib/grid'
 import { createHeatPixelData } from '../lib/heat-raster'
 import { createIsochroneBoundary, type IsochroneSegment } from '../lib/isochrone'
@@ -543,7 +544,7 @@ export function OpenMap({
         node.removeEventListener('pointerdown', handlePointerDown, true)
       }
       if (handleMapClick) node.removeEventListener('click', handleMapClick, true)
-      if (frameRef.current !== null) window.cancelAnimationFrame(frameRef.current)
+      cancelScheduledFrame(frameRef, window.cancelAnimationFrame)
       mapRef.current?.remove()
       mapRef.current = null
     }
