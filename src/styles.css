@@ -52,10 +52,6 @@ button:focus-visible,
   background: #edf2ee;
 }
 
-.open-map {
-  z-index: 0;
-}
-
 .open-map .maplibregl-canvas {
   cursor: crosshair;
 }
