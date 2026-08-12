@@ -86,10 +86,10 @@ button:focus-visible,
   left: 20px;
   z-index: 5;
   display: flex;
-  width: 338px;
-  max-height: 850px;
+  width: 372px;
+  max-height: calc(100vh - 40px);
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   padding: 25px 24px 22px;
   overflow-y: auto;
   background: #ffffff;
@@ -114,6 +114,132 @@ button:focus-visible,
 .brand svg {
   width: 24px;
   height: 24px;
+}
+
+.point-manager {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  background: #f7f9fc;
+  border: 1px solid #dbe2ec;
+  border-radius: 10px;
+}
+
+.point-manager__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.add-point-button {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  color: #175fbf;
+  background: #ffffff;
+  border: 1px solid #b9c9df;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.add-point-button svg {
+  width: 15px;
+  height: 15px;
+}
+
+.add-point-button:hover,
+.add-point-button.is-active {
+  color: #ffffff;
+  background: #1f6fe5;
+  border-color: #1f6fe5;
+}
+
+.add-point-button.is-active svg {
+  transform: rotate(45deg);
+}
+
+.point-list {
+  display: grid;
+  max-height: 116px;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.point-list li {
+  display: grid;
+  min-height: 30px;
+  grid-template-columns: 23px 1fr 25px;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 4px;
+  background: #ffffff;
+  border: 1px solid #e0e6ef;
+  border-radius: 7px;
+}
+
+.point-number {
+  display: grid;
+  width: 21px;
+  height: 21px;
+  place-items: center;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(16, 32, 68, 0.22);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.point-coordinates {
+  min-width: 0;
+  overflow: hidden;
+  color: #33405a;
+  font-size: 11px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remove-point-button {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  padding: 0;
+  color: #7a8497;
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.remove-point-button:hover {
+  color: #b42318;
+  background: #fff0ee;
+}
+
+.point-manager > small,
+.point-manager__empty {
+  margin: 0;
+  color: #778197;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.point-manager > small.is-active {
+  color: #175fbf;
+  font-weight: 650;
 }
 
 .point-prompt {
@@ -275,6 +401,83 @@ button:focus-visible,
   cursor: pointer;
 }
 
+.range-control.is-disabled {
+  opacity: 0.46;
+}
+
+.minutes-input {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #175fbf;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.minutes-input input {
+  width: 48px;
+  height: 29px;
+  padding: 3px 4px;
+  color: #175fbf;
+  background: #ffffff;
+  border: 1px solid #bdcbe0;
+  border-radius: 6px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.toggle-control {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #445069;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.toggle-control > input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.toggle-control__track {
+  display: flex;
+  width: 34px;
+  height: 20px;
+  flex: 0 0 34px;
+  align-items: center;
+  padding: 2px;
+  background: #b8c0cc;
+  border-radius: 999px;
+  transition: background 160ms ease;
+}
+
+.toggle-control__track > span {
+  width: 16px;
+  height: 16px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(16, 32, 68, 0.28);
+  transition: transform 160ms ease;
+}
+
+.toggle-control > input:checked + .toggle-control__track {
+  background: #1f6fe5;
+}
+
+.toggle-control > input:checked + .toggle-control__track > span {
+  transform: translateX(14px);
+}
+
+.toggle-control > input:focus-visible + .toggle-control__track {
+  outline: 3px solid rgba(31, 111, 229, 0.28);
+  outline-offset: 2px;
+}
+
 .boundary-key {
   display: flex;
   align-items: flex-start;
@@ -282,6 +485,10 @@ button:focus-visible,
   color: #778197;
   font-size: 11px;
   line-height: 1.35;
+}
+
+.boundary-key.is-disabled > span {
+  border-top-color: #9da6b5;
 }
 
 .boundary-key > span {
@@ -354,7 +561,7 @@ button:focus-visible,
   z-index: 5;
   display: flex;
   align-items: center;
-  max-width: calc(100vw - 390px);
+  max-width: calc(100vw - 425px);
   gap: 11px;
   padding: 12px 15px;
   overflow-x: auto;
@@ -665,6 +872,15 @@ button:focus-visible,
     font-size: 14px;
   }
 
+  .point-manager {
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .point-list {
+    max-height: 70px;
+  }
+
   .control-group legend {
     margin-bottom: 5px;
     font-size: 14px;
@@ -755,6 +971,7 @@ button:focus-visible,
   }
 
   .control-panel--collapsed .point-prompt,
+  .control-panel--collapsed .point-manager,
   .control-panel--collapsed .control-group,
   .control-panel--collapsed .calculate-button,
   .control-panel--collapsed .calculation-status {

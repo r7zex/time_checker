@@ -8,6 +8,7 @@ function sample(minutes: number): TravelSample {
     coordinates: [0, 0],
     cellBounds: { southWest: [0, 0], northEast: [1, 1] },
     minutes,
+    pointMinutes: [minutes],
     fromCache: false,
   }
 }

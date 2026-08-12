@@ -17,6 +17,7 @@ function samplesFor(values: number[][]): TravelSample[] {
         coordinates: [row + 0.5, column + 0.5],
         cellBounds,
         minutes: values[row][column],
+        pointMinutes: [values[row][column]],
         fromCache: false,
       })
     }

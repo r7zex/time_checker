@@ -3,9 +3,10 @@ import {
   ClockIcon,
   CrosshairIcon,
   MetroIcon,
-  PinIcon,
+  PlusIcon,
   WalkIcon,
 } from './icons'
+import { colorForPoint } from '../lib/point-colors'
 import type {
   CalculationProgress,
   Coordinates,
@@ -20,7 +21,10 @@ interface ControlPanelProps {
   detail: DetailLevel
   heatOpacity: number
   targetMinutes: number
-  point: Coordinates | null
+  showIsochrone: boolean
+  isochroneOpacity: number
+  points: Coordinates[]
+  isAddingPoint: boolean
   isCalculating: boolean
   progress: CalculationProgress
   error: string | null
@@ -30,6 +34,10 @@ interface ControlPanelProps {
   onDetailChange: (detail: DetailLevel) => void
   onHeatOpacityChange: (opacity: number) => void
   onTargetMinutesChange: (minutes: number) => void
+  onShowIsochroneChange: (show: boolean) => void
+  onIsochroneOpacityChange: (opacity: number) => void
+  onAddingPointChange: (isAdding: boolean) => void
+  onRemovePoint: (index: number) => void
   onCalculate: () => void
 }
 
@@ -50,13 +58,26 @@ const detailOptions: Array<{ value: DetailLevel; label: string }> = [
   { value: 'precise', label: 'Точно' },
 ]
 
+const MIN_TARGET_MINUTES = 1
+const MAX_TARGET_MINUTES = 60
+
+function clampTargetMinutes(minutes: number): number {
+  return Math.min(
+    MAX_TARGET_MINUTES,
+    Math.max(MIN_TARGET_MINUTES, Math.round(minutes)),
+  )
+}
+
 export function ControlPanel({
   direction,
   transport,
   detail,
   heatOpacity,
   targetMinutes,
-  point,
+  showIsochrone,
+  isochroneOpacity,
+  points,
+  isAddingPoint,
   isCalculating,
   progress,
   error,
@@ -66,9 +87,13 @@ export function ControlPanel({
   onDetailChange,
   onHeatOpacityChange,
   onTargetMinutesChange,
+  onShowIsochroneChange,
+  onIsochroneOpacityChange,
+  onAddingPointChange,
+  onRemovePoint,
   onCalculate,
 }: ControlPanelProps) {
-  const hasPoint = point !== null
+  const hasPoint = points.length > 0
   const progressPercent = progress.total
     ? Math.round((progress.completed / progress.total) * 100)
     : 0
@@ -89,17 +114,57 @@ export function ControlPanel({
         <span>Время в пути</span>
       </div>
 
-      <div className={`point-prompt ${hasPoint ? 'point-prompt--ready' : ''}`}>
-        <PinIcon />
-        <span className="point-prompt__copy">
-          <strong>
-            {point
-              ? `${point[0].toFixed(5)}, ${point[1].toFixed(5)}`
-              : 'Выберите точку на карте'}
-          </strong>
-          {point ? <small>Нажмите на карту, чтобы изменить</small> : null}
-        </span>
-      </div>
+      <section className="point-manager" aria-label="Выбранные точки">
+        <div className="point-manager__header">
+          <strong>Точки ({points.length})</strong>
+          <button
+            className={`add-point-button ${isAddingPoint ? 'is-active' : ''}`}
+            type="button"
+            aria-pressed={isAddingPoint}
+            onClick={() => onAddingPointChange(!isAddingPoint)}
+          >
+            <PlusIcon />
+            {isAddingPoint ? 'Отменить' : 'Добавить точку'}
+          </button>
+        </div>
+
+        {points.length > 0 ? (
+          <ol className="point-list">
+            {points.map((point, index) => (
+              <li key={`${point[0]}:${point[1]}:${index}`}>
+                <span
+                  className="point-number"
+                  style={{ backgroundColor: colorForPoint(index) }}
+                  aria-hidden="true"
+                >
+                  {index + 1}
+                </span>
+                <span className="point-coordinates">
+                  {point[0].toFixed(5)}, {point[1].toFixed(5)}
+                </span>
+                <button
+                  className="remove-point-button"
+                  type="button"
+                  aria-label={`Удалить точку ${index + 1}`}
+                  onClick={() => onRemovePoint(index)}
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p className="point-manager__empty">Нажмите на карту, чтобы выбрать точку</p>
+        )}
+
+        <small className={isAddingPoint ? 'is-active' : ''}>
+          {isAddingPoint
+            ? 'Нажмите на карту — новая точка добавится к существующим'
+            : points.length > 1
+              ? 'Итог клетки — самое долгое время среди всех точек'
+              : 'Обычный клик по карте перемещает точку 1'}
+        </small>
+      </section>
 
       <fieldset className="control-group">
         <legend>Направление</legend>
@@ -182,21 +247,69 @@ export function ControlPanel({
         <label className="range-control">
           <span className="range-control__header">
             <span>Граница доступности</span>
-            <output>до {targetMinutes} мин</output>
+            <span className="minutes-input">
+              до
+              <input
+                type="number"
+                min={MIN_TARGET_MINUTES}
+                max={MAX_TARGET_MINUTES}
+                step="1"
+                value={targetMinutes}
+                aria-label="Время границы вручную"
+                onChange={(event) => {
+                  const value = event.currentTarget.valueAsNumber
+                  if (Number.isFinite(value)) {
+                    onTargetMinutesChange(clampTargetMinutes(value))
+                  }
+                }}
+              />
+              мин
+            </span>
           </span>
           <input
             type="range"
-            min="3"
-            max="60"
-            step="3"
+            min={MIN_TARGET_MINUTES}
+            max={MAX_TARGET_MINUTES}
+            step="1"
             value={targetMinutes}
             aria-label="Время границы доступности"
             onChange={(event) => onTargetMinutesChange(Number(event.target.value))}
           />
         </label>
-        <span className="boundary-key">
+        <label className="toggle-control">
+          <input
+            type="checkbox"
+            checked={showIsochrone}
+            onChange={(event) => onShowIsochroneChange(event.currentTarget.checked)}
+          />
+          <span className="toggle-control__track" aria-hidden="true">
+            <span />
+          </span>
+          <span>Показывать выделение зоны</span>
+        </label>
+        <label className={`range-control ${showIsochrone ? '' : 'is-disabled'}`}>
+          <span className="range-control__header">
+            <span>Непрозрачность выделения</span>
+            <output>{Math.round(isochroneOpacity * 100)}%</output>
+          </span>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={isochroneOpacity}
+            disabled={!showIsochrone}
+            aria-label="Непрозрачность выделения зоны"
+            onChange={(event) =>
+              onIsochroneOpacityChange(Number(event.currentTarget.value))
+            }
+          />
+        </label>
+        <span className={`boundary-key ${showIsochrone ? '' : 'is-disabled'}`}>
           <span aria-hidden="true" />
-          Голубая линия показывает общую границу выбранной зоны
+          {showIsochrone
+            ? 'Голубая линия показывает общую границу выбранной зоны'
+            : 'Выделение зоны выключено'}
         </span>
       </fieldset>
 

@@ -6,9 +6,11 @@ import {
 } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { cancelScheduledFrame } from '../lib/animation-frame'
+import { cellLabelLines } from '../lib/cell-labels'
 import { gridSize } from '../lib/grid'
 import { createHeatPixelData } from '../lib/heat-raster'
 import { createIsochroneBoundary, type IsochroneSegment } from '../lib/isochrone'
+import { colorForPoint } from '../lib/point-colors'
 import {
   METRO_OVERLAY_STATIONS,
   METRO_ROUTE_SEGMENTS,
@@ -22,11 +24,13 @@ import type {
 } from '../types'
 
 interface OpenMapProps {
-  point: Coordinates | null
+  points: Coordinates[]
   samples: TravelSample[]
   detail: DetailLevel
   heatOpacity: number
   targetMinutes: number
+  showIsochrone: boolean
+  isochroneOpacity: number
   onPointChange: (point: Coordinates) => void
   onBoundsChange: (bounds: MapBounds) => void
   onError: (message: string) => void
@@ -44,16 +48,17 @@ interface HeatRasterCache {
 }
 
 interface RenderSettings {
-  point: Coordinates | null
+  points: Coordinates[]
   samples: TravelSample[]
   detail: DetailLevel
   heatOpacity: number
   targetMinutes: number
+  showIsochrone: boolean
+  isochroneOpacity: number
 }
 
 const MOSCOW: [longitude: number, latitude: number] = [37.618423, 55.751244]
 const LABEL_MIN_CELL_SIZE = 15
-const PRIORITY_STATION = 'ЗИЛ'
 
 const OPEN_STREET_MAP_STYLE: StyleSpecification = {
   version: 8,
@@ -88,8 +93,6 @@ const METRO_ROUTE_GROUPS = (() => {
 })()
 
 const METRO_LABEL_STATIONS = [...METRO_OVERLAY_STATIONS].sort((left, right) => {
-  if (left.name === PRIORITY_STATION) return -1
-  if (right.name === PRIORITY_STATION) return 1
   if (left.isKey !== right.isKey) return left.isKey ? -1 : 1
   return left.name.localeCompare(right.name, 'ru')
 })
@@ -193,26 +196,22 @@ function drawMetroOverlay(context: CanvasRenderingContext2D, map: MapLibreMap) {
 
   const occupied = new Set<string>()
   for (const station of METRO_LABEL_STATIONS) {
-    const isPriority = station.name === PRIORITY_STATION
-    const canShow =
-      (isPriority && zoom >= 9.5) ||
-      (station.isKey && zoom >= 11) ||
-      zoom >= 13
+    const canShow = (station.isKey && zoom >= 11) || zoom >= 13
     if (!canShow) continue
     if (!isVisible(station.coordinates, visibleBounds)) continue
 
     const position = map.project([station.coordinates[1], station.coordinates[0]])
     const key = `${Math.round(position.x / 86)}:${Math.round(position.y / 18)}`
-    if (!isPriority && occupied.has(key)) continue
+    if (occupied.has(key)) continue
     occupied.add(key)
 
-    context.font = `${isPriority ? 800 : 700} ${isPriority ? 13 : 10}px Inter, sans-serif`
+    context.font = '700 10px Inter, sans-serif'
     context.textAlign = 'left'
     context.textBaseline = 'middle'
-    context.lineWidth = isPriority ? 4.6 : 3.8
+    context.lineWidth = 3.8
     context.strokeStyle = 'rgba(255, 255, 255, 0.98)'
     context.strokeText(station.name, position.x + 5, position.y - 5)
-    context.fillStyle = isPriority ? '#0e315f' : '#253652'
+    context.fillStyle = '#253652'
     context.fillText(station.name, position.x + 5, position.y - 5)
   }
 
@@ -296,7 +295,6 @@ function drawCellLabels(
   const alpha = Math.min(0.4, 0.14 + (cellSize - LABEL_MIN_CELL_SIZE) / 80)
   const fontSize = Math.min(11, Math.max(7, cellSize * 0.36))
   context.save()
-  context.font = `650 ${fontSize}px Inter, sans-serif`
   context.textAlign = 'center'
   context.textBaseline = 'middle'
   context.fillStyle = `rgba(13, 30, 61, ${alpha})`
@@ -307,9 +305,24 @@ function drawCellLabels(
     for (let column = columnStart; column <= columnEnd; column += 1) {
       const sample = cache.samples[row * cache.columns + column]
       const position = map.project([sample.coordinates[1], sample.coordinates[0]])
-      const label = String(Math.round(sample.minutes))
-      context.strokeText(label, position.x, position.y)
-      context.fillText(label, position.x, position.y)
+      const pointMinutes = sample.pointMinutes
+      const canShowBreakdown =
+        pointMinutes.length > 1 &&
+        cellSize >= Math.max(34, 18 + pointMinutes.length * 8)
+      const labels = cellLabelLines(sample, canShowBreakdown)
+      const detailFontSize = Math.max(6, fontSize * 0.72)
+      const lineHeight = Math.max(7, detailFontSize * 1.2)
+      const startY = position.y - ((labels.length - 1) * lineHeight) / 2
+
+      labels.forEach((label, labelIndex) => {
+        context.font =
+          labelIndex === 0
+            ? `700 ${fontSize}px Inter, sans-serif`
+            : `600 ${detailFontSize}px Inter, sans-serif`
+        const y = startY + labelIndex * lineHeight
+        context.strokeText(label, position.x, y)
+        context.fillText(label, position.x, y)
+      })
     }
   }
 
@@ -320,10 +333,12 @@ function drawIsochrone(
   context: CanvasRenderingContext2D,
   map: MapLibreMap,
   boundary: readonly IsochroneSegment[],
+  opacity: number,
 ) {
-  if (boundary.length === 0) return
+  if (boundary.length === 0 || opacity <= 0) return
 
   context.save()
+  context.globalAlpha = Math.min(1, Math.max(0, opacity))
   context.lineCap = 'round'
   context.lineJoin = 'round'
   context.beginPath()
@@ -342,28 +357,43 @@ function drawIsochrone(
   context.restore()
 }
 
-function drawSelectedPoint(
+function drawSelectedPoints(
   context: CanvasRenderingContext2D,
   map: MapLibreMap,
-  point: Coordinates | null,
+  points: readonly Coordinates[],
 ) {
-  if (!point) return
-  const selected = map.project([point[1], point[0]])
-  context.beginPath()
-  context.arc(selected.x, selected.y, 9, 0, Math.PI * 2)
-  context.fillStyle = '#16366f'
-  context.fill()
-  context.lineWidth = 4
-  context.strokeStyle = '#ffffff'
-  context.stroke()
+  context.save()
+  context.textAlign = 'center'
+  context.textBaseline = 'middle'
+  context.font = '750 10px Inter, sans-serif'
+
+  points.forEach((point, index) => {
+    const selected = map.project([point[1], point[0]])
+    context.beginPath()
+    context.arc(selected.x, selected.y, 11, 0, Math.PI * 2)
+    context.fillStyle = colorForPoint(index)
+    context.shadowColor = 'rgba(10, 31, 62, 0.34)'
+    context.shadowBlur = 4
+    context.fill()
+    context.shadowColor = 'transparent'
+    context.lineWidth = 3.5
+    context.strokeStyle = '#ffffff'
+    context.stroke()
+    context.fillStyle = '#ffffff'
+    context.fillText(String(index + 1), selected.x, selected.y + 0.5)
+  })
+
+  context.restore()
 }
 
 export function OpenMap({
-  point,
+  points,
   samples,
   detail,
   heatOpacity,
   targetMinutes,
+  showIsochrone,
+  isochroneOpacity,
   onPointChange,
   onBoundsChange,
   onError,
@@ -374,20 +404,24 @@ export function OpenMap({
   const frameRef = useRef<number | null>(null)
   const heatCacheRef = useRef<HeatRasterCache | null>(null)
   const renderSettingsRef = useRef<RenderSettings>({
-    point,
+    points,
     samples,
     detail,
     heatOpacity,
     targetMinutes,
+    showIsochrone,
+    isochroneOpacity,
   })
   const [isReady, setIsReady] = useState(false)
 
   renderSettingsRef.current = {
-    point,
+    points,
     samples,
     detail,
     heatOpacity,
     targetMinutes,
+    showIsochrone,
+    isochroneOpacity,
   }
 
   const publishBounds = useCallback(() => {
@@ -433,7 +467,10 @@ export function OpenMap({
     }
 
     if (cache) {
-      if (cache.boundaryTarget !== settings.targetMinutes) {
+      if (
+        settings.showIsochrone &&
+        cache.boundaryTarget !== settings.targetMinutes
+      ) {
         cache.boundaryTarget = settings.targetMinutes
         cache.boundary = createIsochroneBoundary(
           cache.samples,
@@ -447,9 +484,16 @@ export function OpenMap({
     drawMetroOverlay(context, map)
     if (cache) {
       drawCellLabels(context, map, cache)
-      drawIsochrone(context, map, cache.boundary)
+      if (settings.showIsochrone) {
+        drawIsochrone(
+          context,
+          map,
+          cache.boundary,
+          settings.isochroneOpacity,
+        )
+      }
     }
-    drawSelectedPoint(context, map, settings.point)
+    drawSelectedPoints(context, map, settings.points)
   }, [])
 
   const scheduleDraw = useCallback(() => {
@@ -552,7 +596,17 @@ export function OpenMap({
 
   useEffect(() => {
     scheduleDraw()
-  }, [detail, heatOpacity, isReady, point, samples, scheduleDraw, targetMinutes])
+  }, [
+    detail,
+    heatOpacity,
+    isReady,
+    isochroneOpacity,
+    points,
+    samples,
+    scheduleDraw,
+    showIsochrone,
+    targetMinutes,
+  ])
 
   return (
     <div className="map-stage">

@@ -66,9 +66,9 @@ export const METRO_OVERLAY_STATIONS: readonly MetroOverlayStation[] = data.stati
     ...station,
     color: lineById.get(station.lineIds[0])?.color ?? '#65718a',
     isKey:
-      station.name === 'ЗИЛ' ||
-      (stationNameCount.get(station.name) ?? 0) > 1 ||
-      (trackDegree.get(station.id) ?? 0) <= 1,
+      station.name !== 'ЗИЛ' &&
+      ((stationNameCount.get(station.name) ?? 0) > 1 ||
+        (trackDegree.get(station.id) ?? 0) <= 1),
   }),
 )
 

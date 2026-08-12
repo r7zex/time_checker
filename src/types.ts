@@ -12,6 +12,7 @@ export interface TravelSample {
   coordinates: Coordinates
   cellBounds: MapBounds
   minutes: number
+  pointMinutes: number[]
   fromCache: boolean
 }
 
