@@ -4,6 +4,7 @@ import type {
   DetailLevel,
   Direction,
   MapBounds,
+  TransportMode,
   TravelSample,
 } from '../types'
 import { createGridCells } from './grid'
@@ -31,7 +32,17 @@ interface CalculateOtpOptions {
   bounds: MapBounds
   detail: DetailLevel
   direction: Direction
+  transport: Exclude<TransportMode, 'walk'>
   onSurface?: (completed: number, total: number) => void
+}
+
+function smoothStep(start: number, end: number, value: number): number {
+  const progress = Math.min(1, Math.max(0, (value - start) / (end - start)))
+  return progress * progress * (3 - 2 * progress)
+}
+
+function mix(from: number, to: number, weight: number): number {
+  return from + (to - from) * weight
 }
 
 function webMercator([latitude, longitude]: Coordinates): [number, number] {
@@ -86,7 +97,9 @@ export function minutesFromTravelTimeRaster(
  * raster cell. With synthetic frequency trips this can retain a slower state,
  * especially after a transfer. Cross-checking it against the calibrated metro
  * field removes those large artifacts while still keeping faster OSM
- * bus/tram routes and the street graph selected by OTP.
+ * bus/tram routes and the street graph selected by OTP. All transitions are
+ * continuous: the previous hard four-minute threshold could make adjacent
+ * cells jump by six minutes when their differences straddled that threshold.
  */
 export function calibrateOtpMinutes(
   otpMinutes: number,
@@ -97,14 +110,48 @@ export function calibrateOtpMinutes(
   }
 
   const difference = otpMinutes - metroModelMinutes
-  if (difference > 4) return metroModelMinutes
-  if (difference >= 2) {
-    return metroModelMinutes < 50
-      ? otpMinutes + 2
-      : (otpMinutes + metroModelMinutes) / 2
-  }
-  if (difference >= -2) return (otpMinutes + metroModelMinutes) / 2
-  return otpMinutes
+  if (difference <= -2) return otpMinutes
+
+  const average = (otpMinutes + metroModelMinutes) / 2
+  const centralEstimate = mix(
+    otpMinutes,
+    average,
+    smoothStep(-2, 0, difference),
+  )
+
+  // The supplied control routes below 50 minutes need the small systematic
+  // offset retained by the old calibration. Fade it in by both route length
+  // and model difference so crossing either value cannot create a seam.
+  const shortRouteWeight = 1 - smoothStep(44, 54, metroModelMinutes)
+  const shortRouteEstimate = mix(
+    centralEstimate,
+    otpMinutes + 2,
+    smoothStep(0, 3.5, difference),
+  )
+  const moderateDifferenceEstimate = mix(
+    centralEstimate,
+    shortRouteEstimate,
+    shortRouteWeight,
+  )
+
+  // As the OTP/model discrepancy grows, smoothly prefer the stable metro
+  // field. Short routes get a wider transition because two minutes matter
+  // much more there and were the source of the visible isolated pits.
+  const correctionStart = mix(2, 3.5, shortRouteWeight)
+  const correctionEnd = mix(4.5, 6, shortRouteWeight)
+  return mix(
+    moderateDifferenceEstimate,
+    metroModelMinutes,
+    smoothStep(correctionStart, correctionEnd, difference),
+  )
+}
+
+export function otpModesForTransport(
+  transport: Exclude<TransportMode, 'walk'>,
+): string {
+  return transport === 'metro'
+    ? 'WALK,SUBWAY'
+    : 'WALK,SUBWAY,BUS,TRAM'
 }
 
 export function travelSamplesFromRasters(
@@ -135,11 +182,12 @@ export function travelSamplesFromRasters(
 async function fetchTravelTimeRaster(
   point: Coordinates,
   direction: Direction,
+  transport: Exclude<TransportMode, 'walk'>,
 ): Promise<TravelTimeRaster> {
   const url = new URL('/otp/traveltime/surface', window.location.origin)
   url.searchParams.set('batch', 'true')
   url.searchParams.set('location', `${point[0]},${point[1]}`)
-  url.searchParams.set('modes', 'WALK,TRANSIT')
+  url.searchParams.set('modes', otpModesForTransport(transport))
   // The generated frequency timetable has an identical trip in each direction.
   // OTP 2.4's reverse travel-time surface is not stable for frequency-based
   // trips, so a forward surface represents both UI directions without that
@@ -196,11 +244,12 @@ export async function calculateOtpTravelSamples({
   bounds,
   detail,
   direction,
+  transport,
   onSurface,
 }: CalculateOtpOptions): Promise<TravelSample[]> {
   const rasters: TravelTimeRaster[] = []
   for (const point of points) {
-    rasters.push(await fetchTravelTimeRaster(point, direction))
+    rasters.push(await fetchTravelTimeRaster(point, direction, transport))
     onSurface?.(rasters.length, points.length)
   }
   const metroModelSamples = calculateTravelSamples(points, bounds, detail, 'metro')

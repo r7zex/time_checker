@@ -3,6 +3,7 @@ import type { TravelTimeRaster } from './otp'
 import {
   calibrateOtpMinutes,
   minutesFromTravelTimeRaster,
+  otpModesForTransport,
   travelSamplesFromRasters,
 } from './otp'
 
@@ -65,6 +66,21 @@ describe('OpenTripPlanner travel-time surfaces', () => {
     expect(Math.round(calibrateOtpMinutes(48.3, 44.4))).toBe(50)
     expect(Math.round(calibrateOtpMinutes(39.3, 40.5))).toBe(40)
     expect(Math.round(calibrateOtpMinutes(71.0, 66.3))).toBe(66)
+  })
+
+  it('calibrates continuously around the former four-minute seam', () => {
+    const below = calibrateOtpMinutes(37.9, 34)
+    const at = calibrateOtpMinutes(38, 34)
+    const above = calibrateOtpMinutes(38.1, 34)
+
+    expect(Math.abs(at - below)).toBeLessThan(0.5)
+    expect(Math.abs(above - at)).toBeLessThan(0.5)
+    expect(at).toBeGreaterThan(38)
+  })
+
+  it('requests explicit OTP modes for metro and surface transport', () => {
+    expect(otpModesForTransport('metro')).toBe('WALK,SUBWAY')
+    expect(otpModesForTransport('transit')).toBe('WALK,SUBWAY,BUS,TRAM')
   })
 
   it('keeps faster OTP routes and unreachable cells intact', () => {

@@ -3,6 +3,7 @@ export type Coordinates = [latitude: number, longitude: number]
 export type Direction = 'to' | 'from'
 
 export type TransportMode =
+  | 'transit'
   | 'metro'
   | 'walk'
 
