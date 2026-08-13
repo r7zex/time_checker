@@ -199,7 +199,7 @@ export default function App() {
       <HeatLegend />
       <div className="accuracy-note">
         {transport === 'metro'
-          ? 'Локальный OpenTripPlanner · метро GTFS · пешие маршруты OpenStreetMap'
+          ? 'Локальный OpenTripPlanner · весь транспорт и пешие маршруты OpenStreetMap'
           : 'Пешее время без OTP — приближённый расчёт по прямой'}
       </div>
     </main>

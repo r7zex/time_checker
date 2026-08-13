@@ -4,17 +4,17 @@
     "apiProcessingTimeout": "PT3M"
   },
   "routingDefaults": {
-    "walkSpeed": 1.33,
+    "walkSpeed": 1.42,
     "walkReluctance": 1.0,
     "stairsReluctance": 1.65,
     "escalatorReluctance": 1.0,
     "waitReluctance": 1.0,
-    "transferSlack": 30,
+    "transferSlack": 15,
     "boardSlackForMode": {
-      "SUBWAY": "PT30S"
+      "SUBWAY": "PT15S"
     },
     "alightSlackForMode": {
-      "SUBWAY": "PT30S"
+      "SUBWAY": "PT15S"
     },
     "accessEgress": {
       "maxDuration": "PT45M",
