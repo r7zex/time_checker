@@ -37,7 +37,7 @@ export default function App() {
   const [points, setPoints] = useState<Coordinates[]>([CENTRAL_TELEGRAPH])
   const [bounds, setBounds] = useState<MapBounds>(FALLBACK_BOUNDS)
   const [direction, setDirection] = useState<Direction>('to')
-  const [transport, setTransport] = useState<TransportMode>('metro')
+  const [transport, setTransport] = useState<TransportMode>('transit')
   const [detail, setDetail] = useState<DetailLevel>('balanced')
   const [heatOpacity, setHeatOpacity] = useState(0.46)
   const [targetMinutes, setTargetMinutes] = useState(30)
@@ -92,12 +92,14 @@ export default function App() {
 
     try {
       await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()))
-      const calculated = transport === 'metro'
+      const usesOtp = transport !== 'walk'
+      const calculated = usesOtp
         ? await calculateOtpTravelSamples({
             points,
             bounds,
             detail,
             direction,
+            transport,
             onSurface: (completedSurfaces) => {
               setProgress({
                 completed: Math.round(total * completedSurfaces / points.length),
@@ -112,7 +114,7 @@ export default function App() {
       setProgress({
         completed: calculated.length * points.length,
         total,
-        apiRequests: transport === 'metro' ? points.length : 0,
+        apiRequests: usesOtp ? points.length : 0,
         cached: 0,
       })
     } catch (calculationError) {
@@ -198,8 +200,10 @@ export default function App() {
       />
       <HeatLegend />
       <div className="accuracy-note">
-        {transport === 'metro'
-          ? 'Локальный OpenTripPlanner · весь транспорт и пешие маршруты OpenStreetMap'
+        {transport === 'transit'
+          ? 'OTP · метро, автобусы, трамваи и пешие маршруты OpenStreetMap'
+          : transport === 'metro'
+            ? 'OTP · только метро и пешие маршруты OpenStreetMap'
           : 'Пешее время без OTP — приближённый расчёт по прямой'}
       </div>
     </main>

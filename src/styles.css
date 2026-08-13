@@ -368,6 +368,14 @@ button:focus-visible,
   flex: 0 0 22px;
 }
 
+.control-hint {
+  display: block;
+  margin-top: 7px;
+  color: #778197;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
 .display-controls {
   display: grid;
   gap: 13px;
@@ -920,7 +928,8 @@ button:focus-visible,
     text-align: center;
   }
 
-  .transport-list button:first-child {
+  .transport-list button:first-child,
+  .transport-list button:nth-child(2) {
     min-width: 132px;
   }
 

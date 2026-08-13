@@ -4,6 +4,7 @@ import {
   CrosshairIcon,
   MetroIcon,
   PlusIcon,
+  TransitIcon,
   WalkIcon,
 } from './icons'
 import { colorForPoint } from '../lib/point-colors'
@@ -48,7 +49,8 @@ interface TransportOption {
 }
 
 const transportOptions: TransportOption[] = [
-  { value: 'metro', label: 'Транспорт + пешком', Icon: MetroIcon },
+  { value: 'transit', label: 'Весь транспорт + пешком', Icon: TransitIcon },
+  { value: 'metro', label: 'Только метро + пешком', Icon: MetroIcon },
   { value: 'walk', label: 'Только пешком', Icon: WalkIcon },
 ]
 
@@ -100,7 +102,7 @@ export function ControlPanel({
   const status = isCalculating
     ? progress.apiRequests
       ? `Получено поверхностей OTP: ${progress.apiRequests} из ${points.length}`
-      : transport === 'metro'
+      : transport !== 'walk'
         ? 'OpenTripPlanner строит первую поверхность…'
         : `Считаем ${progress.total} клеток локально`
     : progress.total
@@ -213,6 +215,9 @@ export function ControlPanel({
             </button>
           ))}
         </div>
+        <small className="control-hint">
+          Автобусы и трамваи учитываются только в первом режиме
+        </small>
       </fieldset>
 
       <fieldset className="control-group control-group--detail">
