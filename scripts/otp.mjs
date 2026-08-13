@@ -13,6 +13,7 @@ const RUNTIME_DIRECTORY = new URL('../otp/runtime/', import.meta.url)
 const DATA_DIRECTORY = new URL('../otp/data/', import.meta.url)
 const JAR = new URL(`otp-${OTP_VERSION}-shaded.jar`, RUNTIME_DIRECTORY)
 const OSM = new URL('Moscow.osm.pbf', DATA_DIRECTORY)
+const GTFS = new URL('moscow-metro.gtfs.zip', DATA_DIRECTORY)
 const GRAPH = new URL('graph.obj', DATA_DIRECTORY)
 const JAR_URL = `https://repo1.maven.org/maven2/org/opentripplanner/otp/${OTP_VERSION}/otp-${OTP_VERSION}-shaded.jar`
 const OSM_URL = 'https://download.bbbike.org/osm/bbbike/Moscow/Moscow.osm.pbf'
@@ -20,6 +21,16 @@ const MEMORY = process.env.OTP_MEMORY ?? '8G'
 const ROOT_PATH = fileURLToPath(ROOT)
 const DATA_DIRECTORY_PATH = fileURLToPath(DATA_DIRECTORY)
 const JAR_PATH = fileURLToPath(JAR)
+const GRAPH_INPUTS = [
+  JAR,
+  OSM,
+  GTFS,
+  new URL('../scripts/generate-metro-gtfs.mjs', import.meta.url),
+  new URL('../src/data/metro.json', import.meta.url),
+  new URL('../otp/otp-config.json', import.meta.url),
+  new URL('../otp/router-config.json', import.meta.url),
+  new URL('../otp/build-config.json', import.meta.url),
+]
 
 async function exists(file) {
   try {
@@ -78,6 +89,16 @@ async function copyConfiguration() {
   }
 }
 
+async function graphIsStale() {
+  if (!(await exists(GRAPH))) return false
+  const graphModifiedAt = (await stat(GRAPH)).mtimeMs
+  for (const input of GRAPH_INPUTS) {
+    if (!(await exists(input))) continue
+    if ((await stat(input)).mtimeMs > graphModifiedAt) return true
+  }
+  return false
+}
+
 async function setup() {
   await mkdir(RUNTIME_DIRECTORY, { recursive: true })
   await mkdir(DATA_DIRECTORY, { recursive: true })
@@ -122,6 +143,10 @@ async function serve() {
   assertJava()
   if (!(await exists(GRAPH))) {
     throw new Error('OTP graph is missing. Run: npm run otp:build')
+  }
+  if (await graphIsStale()) {
+    console.log('OTP inputs changed; rebuilding the local graph before startup…')
+    await build()
   }
   await copyConfiguration()
   await runJava(['--load'])
