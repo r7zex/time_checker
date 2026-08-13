@@ -8,9 +8,16 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test": "vitest run",
-    "update:metro": "node scripts/update-metro-data.mjs"
+    "update:metro": "node scripts/update-metro-data.mjs",
+    "generate:gtfs": "node scripts/generate-metro-gtfs.mjs",
+    "otp:setup": "node scripts/otp.mjs setup",
+    "otp:build": "node scripts/otp.mjs build",
+    "otp:serve": "node scripts/otp.mjs serve",
+    "otp": "node scripts/otp.mjs start"
   },
   "dependencies": {
+    "fflate": "^0.8.2",
+    "geotiff": "^2.1.3",
     "maplibre-gl": "^6.3.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"

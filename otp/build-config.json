@@ -1,0 +1,6 @@
+{
+  "boardingLocationTags": ["ref", "wikidata"],
+  "gtfsDefaults": {
+    "stationTransferPreference": "recommended"
+  }
+}

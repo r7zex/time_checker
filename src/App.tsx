@@ -3,6 +3,7 @@ import { ControlPanel } from './components/ControlPanel'
 import { HeatLegend } from './components/HeatLegend'
 import { SettingsIcon } from './components/icons'
 import { detailPointCount } from './lib/grid'
+import { calculateOtpTravelSamples } from './lib/otp'
 import { updateSelectedPoints } from './lib/point-selection'
 import { calculateTravelSamples } from './lib/travel'
 import type {
@@ -91,12 +92,27 @@ export default function App() {
 
     try {
       await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()))
-      const calculated = calculateTravelSamples(points, bounds, detail, transport)
+      const calculated = transport === 'metro'
+        ? await calculateOtpTravelSamples({
+            points,
+            bounds,
+            detail,
+            direction,
+            onSurface: (completedSurfaces) => {
+              setProgress({
+                completed: Math.round(total * completedSurfaces / points.length),
+                total,
+                apiRequests: completedSurfaces,
+                cached: 0,
+              })
+            },
+          })
+        : calculateTravelSamples(points, bounds, detail, transport)
       setSamples(calculated)
       setProgress({
         completed: calculated.length * points.length,
         total,
-        apiRequests: 0,
+        apiRequests: transport === 'metro' ? points.length : 0,
         cached: 0,
       })
     } catch (calculationError) {
@@ -108,7 +124,7 @@ export default function App() {
     } finally {
       setIsCalculating(false)
     }
-  }, [bounds, detail, isCalculating, points, transport])
+  }, [bounds, detail, direction, isCalculating, points, transport])
 
   return (
     <main className="app-shell">
@@ -182,7 +198,9 @@ export default function App() {
       />
       <HeatLegend />
       <div className="accuracy-note">
-        Метро считается по открытому графу станций; пешие участки — приближённо
+        {transport === 'metro'
+          ? 'Локальный OpenTripPlanner · метро GTFS · пешие маршруты OpenStreetMap'
+          : 'Пешее время без OTP — приближённый расчёт по прямой'}
       </div>
     </main>
   )

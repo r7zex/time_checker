@@ -98,9 +98,15 @@ export function ControlPanel({
     ? Math.round((progress.completed / progress.total) * 100)
     : 0
   const status = isCalculating
-    ? `Считаем ${progress.total} точек локально`
+    ? progress.apiRequests
+      ? `Получено поверхностей OTP: ${progress.apiRequests} из ${points.length}`
+      : transport === 'metro'
+        ? 'OpenTripPlanner строит первую поверхность…'
+        : `Считаем ${progress.total} клеток локально`
     : progress.total
-      ? `${progress.total} точек · без маршрутных API-запросов`
+      ? progress.apiRequests
+        ? `${progress.total} клеток · ${progress.apiRequests} локальных запросов OTP`
+        : `${progress.total} клеток · без маршрутных API-запросов`
       : 'Расчёт начнётся после выбора точки'
 
   return (
@@ -328,7 +334,7 @@ export function ControlPanel({
         <div className="progress-track" aria-hidden="true">
           <span style={{ width: `${progressPercent}%` }} />
         </div>
-        <small>OSM-карта · открытый граф метро Wikidata</small>
+        <small>OSM-карта · OpenTripPlanner · метро GTFS/Wikidata</small>
       </div>
     </aside>
   )
