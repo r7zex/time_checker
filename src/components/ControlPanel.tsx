@@ -48,7 +48,7 @@ interface TransportOption {
 }
 
 const transportOptions: TransportOption[] = [
-  { value: 'metro', label: 'Метро + пешком', Icon: MetroIcon },
+  { value: 'metro', label: 'Транспорт + пешком', Icon: MetroIcon },
   { value: 'walk', label: 'Только пешком', Icon: WalkIcon },
 ]
 
@@ -334,7 +334,7 @@ export function ControlPanel({
         <div className="progress-track" aria-hidden="true">
           <span style={{ width: `${progressPercent}%` }} />
         </div>
-        <small>OSM-карта · OpenTripPlanner · метро GTFS/Wikidata</small>
+        <small>OSM-карта · OpenTripPlanner · метро, автобусы и трамваи</small>
       </div>
     </aside>
   )

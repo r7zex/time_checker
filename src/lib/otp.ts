@@ -7,7 +7,10 @@ import type {
   TravelSample,
 } from '../types'
 import { createGridCells } from './grid'
-import { combinedTravelMinutes } from './travel'
+import {
+  calculateTravelSamples,
+  combinedTravelMinutes,
+} from './travel'
 
 export const OTP_CUTOFF_MINUTES = 120
 const UNREACHABLE_MINUTES = OTP_CUTOFF_MINUTES + 1
@@ -78,15 +81,47 @@ export function minutesFromTravelTimeRaster(
   return Math.max(0, rawSeconds - raster.baselineSeconds) / 60
 }
 
+/**
+ * OTP 2.4's one-to-many renderer optimizes a single generalized-cost state per
+ * raster cell. With synthetic frequency trips this can retain a slower state,
+ * especially after a transfer. Cross-checking it against the calibrated metro
+ * field removes those large artifacts while still keeping faster OSM
+ * bus/tram routes and the street graph selected by OTP.
+ */
+export function calibrateOtpMinutes(
+  otpMinutes: number,
+  metroModelMinutes: number,
+): number {
+  if (otpMinutes > OTP_CUTOFF_MINUTES || metroModelMinutes > OTP_CUTOFF_MINUTES) {
+    return otpMinutes
+  }
+
+  const difference = otpMinutes - metroModelMinutes
+  if (difference > 4) return metroModelMinutes
+  if (difference >= 2) {
+    return metroModelMinutes < 50
+      ? otpMinutes + 2
+      : (otpMinutes + metroModelMinutes) / 2
+  }
+  if (difference >= -2) return (otpMinutes + metroModelMinutes) / 2
+  return otpMinutes
+}
+
 export function travelSamplesFromRasters(
   rasters: readonly TravelTimeRaster[],
   bounds: MapBounds,
   detail: DetailLevel,
+  metroModelSamples?: readonly TravelSample[],
 ): TravelSample[] {
-  return createGridCells(bounds, detail).map(({ coordinates, cellBounds }) => {
-    const pointMinutes = rasters.map((raster) =>
+  return createGridCells(bounds, detail).map(({ coordinates, cellBounds }, sampleIndex) => {
+    const rawPointMinutes = rasters.map((raster) =>
       minutesFromTravelTimeRaster(raster, coordinates),
     )
+    const modelPointMinutes = metroModelSamples?.[sampleIndex]?.pointMinutes
+    const pointMinutes = modelPointMinutes?.length === rawPointMinutes.length
+      ? rawPointMinutes.map((minutes, pointIndex) =>
+          calibrateOtpMinutes(minutes, modelPointMinutes[pointIndex]))
+      : rawPointMinutes
     return {
       coordinates,
       cellBounds,
@@ -168,5 +203,6 @@ export async function calculateOtpTravelSamples({
     rasters.push(await fetchTravelTimeRaster(point, direction))
     onSurface?.(rasters.length, points.length)
   }
-  return travelSamplesFromRasters(rasters, bounds, detail)
+  const metroModelSamples = calculateTravelSamples(points, bounds, detail, 'metro')
+  return travelSamplesFromRasters(rasters, bounds, detail, metroModelSamples)
 }

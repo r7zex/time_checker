@@ -82,9 +82,9 @@ async function setup() {
   await mkdir(RUNTIME_DIRECTORY, { recursive: true })
   await mkdir(DATA_DIRECTORY, { recursive: true })
   await copyConfiguration()
-  runNodeScript('scripts/generate-metro-gtfs.mjs')
   await download(JAR_URL, JAR, `OpenTripPlanner ${OTP_VERSION}`)
   await download(OSM_URL, OSM, 'BBBike Moscow OpenStreetMap extract')
+  runNodeScript('scripts/generate-metro-gtfs.mjs')
   console.log('OTP input data is ready. Next: npm run otp:build')
 }
 

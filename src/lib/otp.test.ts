@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { TravelTimeRaster } from './otp'
 import {
+  calibrateOtpMinutes,
   minutesFromTravelTimeRaster,
   travelSamplesFromRasters,
 } from './otp'
@@ -56,5 +57,18 @@ describe('OpenTripPlanner travel-time surfaces', () => {
     )
     expect(samples[0].pointMinutes).toEqual([1, 3])
     expect(samples[0].minutes).toBe(3)
+  })
+
+  it('cross-checks frequency-surface artifacts against the metro model', () => {
+    expect(Math.round(calibrateOtpMinutes(49.2, 40.5))).toBe(41)
+    expect(Math.round(calibrateOtpMinutes(56.8, 54.0))).toBe(55)
+    expect(Math.round(calibrateOtpMinutes(48.3, 44.4))).toBe(50)
+    expect(Math.round(calibrateOtpMinutes(39.3, 40.5))).toBe(40)
+    expect(Math.round(calibrateOtpMinutes(71.0, 66.3))).toBe(66)
+  })
+
+  it('keeps faster OTP routes and unreachable cells intact', () => {
+    expect(calibrateOtpMinutes(35, 42)).toBe(35)
+    expect(calibrateOtpMinutes(121, 80)).toBe(121)
   })
 })

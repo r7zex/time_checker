@@ -1,15 +1,27 @@
-import { mkdir, writeFile } from 'node:fs/promises'
+import { createReadStream } from 'node:fs'
+import { access, mkdir, writeFile } from 'node:fs/promises'
 import { zipSync, strToU8 } from 'fflate'
+import { OSMTransform } from 'osm-pbf-parser-node'
 import metroJson from '../src/data/metro.json' with { type: 'json' }
 
 const OUTPUT_DIRECTORY = new URL('../otp/data/', import.meta.url)
 const OUTPUT = new URL('moscow-metro.gtfs.zip', OUTPUT_DIRECTORY)
+const OSM_INPUT = new URL('Moscow.osm.pbf', OUTPUT_DIRECTORY)
 const TRAIN_SPEED_KMH = 41
 const MIN_EDGE_SECONDS = 105
 const ACCELERATION_SECONDS = 10
 const DWELL_SECONDS = 5
-const HEADWAY_SECONDS = 180
-const MIN_TRANSFER_SECONDS = 6 * 60
+// OTP treats frequency headways as the full waiting time in travel-time
+// surfaces. These values therefore represent typical waiting time rather than
+// the literal gap between vehicles.
+const HEADWAY_SECONDS = 60
+const MIN_TRANSFER_SECONDS = 3 * 60
+const BUS_SPEED_KMH = 25
+const TRAM_SPEED_KMH = 22
+const SURFACE_TRANSIT_DETOUR = 1.12
+const BUS_DWELL_SECONDS = 15
+const BUS_HEADWAY_SECONDS = 2 * 60
+const TRAM_HEADWAY_SECONDS = 3 * 60
 
 const NON_TRANSFER_NAMES = new Set(['Арбатская', 'Смоленская'])
 const EXPLICIT_TRANSFER_PAIRS = new Set([
@@ -52,6 +64,16 @@ function walkingSeconds(left, right) {
   return Math.round((distanceKm(left, right) * 1.22 * 3600) / 5)
 }
 
+function surfaceTransitSeconds(left, right, mode) {
+  const speed = mode === 'tram' ? TRAM_SPEED_KMH : BUS_SPEED_KMH
+  const minimum = mode === 'tram' ? 55 : 45
+  return Math.round(Math.max(
+    minimum,
+    (distanceKm(left, right) * SURFACE_TRANSIT_DETOUR * 3600) / speed +
+      BUS_DWELL_SECONDS,
+  ))
+}
+
 function pairKey(left, right) {
   return left < right ? `${left}|${right}` : `${right}|${left}`
 }
@@ -63,6 +85,61 @@ function formatGtfsTime(totalSeconds) {
   return [hours, minutes, seconds % 60]
     .map((part) => String(part).padStart(2, '0'))
     .join(':')
+}
+
+function routeColor(value, fallback) {
+  const color = String(value ?? '').replace('#', '')
+  return /^[0-9a-f]{6}$/i.test(color) ? color.toUpperCase() : fallback
+}
+
+async function fileExists(file) {
+  try {
+    await access(file)
+    return true
+  } catch {
+    return false
+  }
+}
+
+async function readSurfaceTransitFromOsm() {
+  if (!(await fileExists(OSM_INPUT))) {
+    console.warn('Moscow.osm.pbf is absent; generating the metro-only GTFS feed.')
+    return { nodes: new Map(), relations: [] }
+  }
+
+  return new Promise((resolve, reject) => {
+    const nodes = new Map()
+    const relations = []
+    createReadStream(OSM_INPUT)
+      .pipe(new OSMTransform({
+        withTags: {
+          node: ['public_transport', 'highway', 'railway', 'name'],
+          way: false,
+          relation: ['route', 'network', 'ref', 'name', 'colour', 'to'],
+        },
+      }))
+      .on('data', (items) => {
+        for (const item of items) {
+          if (
+            item.type === 'node' &&
+            (item.tags?.public_transport === 'platform' ||
+              item.tags?.highway === 'bus_stop' ||
+              item.tags?.railway === 'tram_stop')
+          ) {
+            nodes.set(item.id, item)
+          }
+          if (
+            item.type === 'relation' &&
+            ['bus', 'trolleybus', 'tram'].includes(item.tags?.route) &&
+            item.tags?.network === 'Московский транспорт'
+          ) {
+            relations.push(item)
+          }
+        }
+      })
+      .on('error', reject)
+      .on('end', () => resolve({ nodes, relations }))
+  })
 }
 
 function connectedComponents(stationIds, adjacency) {
@@ -168,8 +245,8 @@ for (const edge of metroJson.edges) {
 
 const agencyRows = [{
   agency_id: 'mosmetro',
-  agency_name: 'Московский метрополитен (локальная модель)',
-  agency_url: 'https://mosmetro.ru/',
+  agency_name: 'Московский транспорт (локальная модель)',
+  agency_url: 'https://transport.mos.ru/',
   agency_timezone: 'Europe/Moscow',
   agency_lang: 'ru',
 }]
@@ -250,6 +327,90 @@ for (const line of metroJson.lines) {
   })
 }
 
+const { nodes: osmTransitNodes, relations: osmTransitRelations } =
+  await readSurfaceTransitFromOsm()
+const surfaceRouteIds = new Set()
+const surfaceStopIds = new Set()
+let surfaceTrips = 0
+for (const relation of osmTransitRelations) {
+  const platforms = relation.members
+    .filter((member) => member.type === 'node' && member.role.includes('platform'))
+    .map((member) => osmTransitNodes.get(member.ref))
+    .filter(Boolean)
+    .filter((platform, index, all) => index === 0 || platform.id !== all[index - 1].id)
+  if (platforms.length < 2) continue
+
+  const mode = relation.tags.route === 'tram' ? 'tram' : 'bus'
+  const routeRef = relation.tags.ref || String(relation.id)
+  const routeId = `osm-${mode}-${routeRef}`
+  if (!surfaceRouteIds.has(routeId)) {
+    surfaceRouteIds.add(routeId)
+    routeRows.push({
+      route_id: routeId,
+      agency_id: 'mosmetro',
+      route_short_name: routeRef,
+      route_long_name: relation.tags.name || `${mode} ${routeRef}`,
+      route_type: mode === 'tram' ? 0 : 3,
+      route_color: routeColor(relation.tags.colour, mode === 'tram' ? 'D32F2F' : '1D70B8'),
+      route_text_color: 'FFFFFF',
+    })
+  }
+
+  for (const platform of platforms) {
+    const stopId = `osm-${platform.id}`
+    if (surfaceStopIds.has(stopId)) continue
+    surfaceStopIds.add(stopId)
+    stopRows.push({
+      stop_id: stopId,
+      stop_code: String(platform.id),
+      stop_name: platform.tags?.name || 'Остановка наземного транспорта',
+      stop_lat: platform.lat,
+      stop_lon: platform.lon,
+      location_type: 0,
+      parent_station: '',
+    })
+  }
+
+  const tripId = `osm-${relation.id}`
+  tripRows.push({
+    route_id: routeId,
+    service_id: 'daily',
+    trip_id: tripId,
+    trip_headsign: relation.tags.to || platforms.at(-1).tags?.name || routeRef,
+    direction_id: 0,
+  })
+
+  frequencyRows.push({
+    trip_id: tripId,
+    start_time: '00:00:00',
+    end_time: '30:00:00',
+    headway_secs: mode === 'tram' ? TRAM_HEADWAY_SECONDS : BUS_HEADWAY_SECONDS,
+    exact_times: 0,
+  })
+
+  let arrivalSeconds = 0
+  platforms.forEach((platform, stopIndex) => {
+    const isLast = stopIndex === platforms.length - 1
+    stopTimeRows.push({
+      trip_id: tripId,
+      arrival_time: formatGtfsTime(arrivalSeconds),
+      departure_time: formatGtfsTime(arrivalSeconds),
+      stop_id: `osm-${platform.id}`,
+      stop_sequence: stopIndex + 1,
+      pickup_type: isLast ? 1 : 0,
+      drop_off_type: stopIndex === 0 ? 1 : 0,
+    })
+    if (!isLast) {
+      arrivalSeconds += surfaceTransitSeconds(
+        [platform.lat, platform.lon],
+        [platforms[stopIndex + 1].lat, platforms[stopIndex + 1].lon],
+        mode,
+      )
+    }
+  })
+  surfaceTrips += 1
+}
+
 const transferRows = []
 for (let leftIndex = 0; leftIndex < metroJson.stations.length; leftIndex += 1) {
   for (let rightIndex = leftIndex + 1; rightIndex < metroJson.stations.length; rightIndex += 1) {
@@ -264,7 +425,7 @@ for (let leftIndex = 0; leftIndex < metroJson.stations.length; leftIndex += 1) {
       distance <= 0.65
     if (!sameNameTransfer && distance > 0.35 && !EXPLICIT_TRANSFER_PAIRS.has(key)) continue
     const seconds = CALIBRATED_TRANSFERS.get(key) ??
-      Math.max(MIN_TRANSFER_SECONDS, walkingSeconds(left.coordinates, right.coordinates) + 120)
+      Math.max(MIN_TRANSFER_SECONDS, walkingSeconds(left.coordinates, right.coordinates) + 90)
     for (const [from, to] of [[left, right], [right, left]]) {
       transferRows.push({
         from_stop_id: from.id,
@@ -327,5 +488,6 @@ await writeFile(
 )
 console.log(
   `Generated ${OUTPUT.pathname}: ${routeRows.length} routes, ${tripRows.length} trips, ` +
-    `${stopRows.length} stops, ${transferRows.length} directed transfers.`,
+    `${stopRows.length} stops, ${transferRows.length} directed transfers ` +
+    `(${surfaceTrips} OSM bus/tram trips).`,
 )
