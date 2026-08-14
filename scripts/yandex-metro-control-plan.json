@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "anchors": [
+    {
+      "id": "central-telegraph",
+      "name": "Центральный телеграф",
+      "coordinates": [55.758272, 37.611014]
+    },
+    {
+      "id": "rudn-ordzhonikidze",
+      "name": "РУДН на Орджоникидзе",
+      "coordinates": [55.71068, 37.603253],
+      "metroFallbackEntries": [
+        {
+          "id": "leninsky-prospekt",
+          "name": "Метро Ленинский проспект",
+          "coordinates": [55.7075, 37.586388888]
+        },
+        {
+          "id": "shabolovskaya",
+          "name": "Метро Шаболовская",
+          "coordinates": [55.718611111, 37.607777777]
+        }
+      ]
+    }
+  ],
+  "destinations": [
+    {
+      "id": "medvedkovo",
+      "name": "Метро Медведково",
+      "stationName": "Медведково",
+      "direction": "north",
+      "coordinates": [55.887222222, 37.661388888]
+    },
+    {
+      "id": "novokosino",
+      "name": "Метро Новокосино",
+      "stationName": "Новокосино",
+      "direction": "east",
+      "coordinates": [55.7452, 37.864]
+    },
+    {
+      "id": "domodedovskaya",
+      "name": "Метро Домодедовская",
+      "stationName": "Домодедовская",
+      "direction": "south-east",
+      "coordinates": [55.610833333, 37.719722222]
+    },
+    {
+      "id": "rasskazovka",
+      "name": "Метро Рассказовка",
+      "stationName": "Рассказовка",
+      "direction": "south-west",
+      "coordinates": [55.633, 37.3328]
+    },
+    {
+      "id": "pyatnitskoye-shosse",
+      "name": "Метро Пятницкое шоссе",
+      "stationName": "Пятницкое шоссе",
+      "direction": "west",
+      "coordinates": [55.853634, 37.353108]
+    },
+    {
+      "id": "planernaya",
+      "name": "Метро Планерная",
+      "stationName": "Планерная",
+      "direction": "north-west",
+      "coordinates": [55.861747833, 37.435977]
+    }
+  ]
+}

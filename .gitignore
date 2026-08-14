@@ -6,3 +6,5 @@ dist
 .DS_Store
 otp/data/
 otp/runtime/
+.cache/
+__pycache__/
