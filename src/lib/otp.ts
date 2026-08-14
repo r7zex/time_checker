@@ -94,22 +94,31 @@ export function minutesFromTravelTimeRaster(
 
 /**
  * OTP 2.4's one-to-many renderer optimizes a single generalized-cost state per
- * raster cell. With synthetic frequency trips this can retain a slower state,
- * especially after a transfer. Cross-checking it against the calibrated metro
- * field removes those large artifacts while still keeping faster OSM
- * bus/tram routes and the street graph selected by OTP. All transitions are
- * continuous: the previous hard four-minute threshold could make adjacent
- * cells jump by six minutes when their differences straddled that threshold.
+ * raster cell. With synthetic frequency trips this can retain either a slower
+ * state after a transfer or an unrealistically fast isolated state away from a
+ * station. Cross-checking it against the calibrated metro field removes both
+ * artifacts. Faster OSM bus/tram routes remain untouched in the full-transit
+ * mode. All transitions are continuous: the previous hard four-minute
+ * threshold could make adjacent cells jump by six minutes when their
+ * differences straddled that threshold.
  */
 export function calibrateOtpMinutes(
   otpMinutes: number,
   metroModelMinutes: number,
+  transport: Exclude<TransportMode, 'walk'> = 'metro',
 ): number {
   if (otpMinutes > OTP_CUTOFF_MINUTES || metroModelMinutes > OTP_CUTOFF_MINUTES) {
     return otpMinutes
   }
 
   const difference = otpMinutes - metroModelMinutes
+  // A street-aware OTP result may be slower because of entrances, crossings,
+  // and barriers, but an isolated raster state must not undercut the stable
+  // metro graph at the same coordinate. Using the graph as the metro-mode
+  // floor removes the off-station low-time islands without flattening real
+  // walking penalties. Full transit can still legitimately beat the metro
+  // graph by using a bus or tram.
+  if (transport === 'metro' && difference < 0) return metroModelMinutes
   if (difference <= -2) return otpMinutes
 
   const average = (otpMinutes + metroModelMinutes) / 2
@@ -159,6 +168,7 @@ export function travelSamplesFromRasters(
   bounds: MapBounds,
   detail: DetailLevel,
   metroModelSamples?: readonly TravelSample[],
+  transport: Exclude<TransportMode, 'walk'> = 'metro',
 ): TravelSample[] {
   return createGridCells(bounds, detail).map(({ coordinates, cellBounds }, sampleIndex) => {
     const rawPointMinutes = rasters.map((raster) =>
@@ -167,7 +177,11 @@ export function travelSamplesFromRasters(
     const modelPointMinutes = metroModelSamples?.[sampleIndex]?.pointMinutes
     const pointMinutes = modelPointMinutes?.length === rawPointMinutes.length
       ? rawPointMinutes.map((minutes, pointIndex) =>
-          calibrateOtpMinutes(minutes, modelPointMinutes[pointIndex]))
+          calibrateOtpMinutes(
+            minutes,
+            modelPointMinutes[pointIndex],
+            transport,
+          ))
       : rawPointMinutes
     return {
       coordinates,
@@ -253,5 +267,11 @@ export async function calculateOtpTravelSamples({
     onSurface?.(rasters.length, points.length)
   }
   const metroModelSamples = calculateTravelSamples(points, bounds, detail, 'metro')
-  return travelSamplesFromRasters(rasters, bounds, detail, metroModelSamples)
+  return travelSamplesFromRasters(
+    rasters,
+    bounds,
+    detail,
+    metroModelSamples,
+    transport,
+  )
 }
