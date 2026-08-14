@@ -64,8 +64,19 @@ describe('OpenTripPlanner travel-time surfaces', () => {
     expect(Math.round(calibrateOtpMinutes(49.2, 40.5))).toBe(41)
     expect(Math.round(calibrateOtpMinutes(56.8, 54.0))).toBe(55)
     expect(Math.round(calibrateOtpMinutes(48.3, 44.4))).toBe(50)
-    expect(Math.round(calibrateOtpMinutes(39.3, 40.5))).toBe(40)
+    expect(Math.round(calibrateOtpMinutes(39.3, 40.5))).toBe(41)
     expect(Math.round(calibrateOtpMinutes(71.0, 66.3))).toBe(66)
+  })
+
+  it('removes implausibly fast metro islands away from stations', () => {
+    expect(calibrateOtpMinutes(35, 42, 'metro')).toBe(42)
+    expect(calibrateOtpMinutes(41.9, 42, 'metro')).toBe(42)
+    expect(calibrateOtpMinutes(42, 42, 'metro')).toBe(42)
+    expect(calibrateOtpMinutes(42.1, 42, 'metro')).toBeGreaterThanOrEqual(42)
+  })
+
+  it('keeps genuinely faster bus and tram routes in full-transit mode', () => {
+    expect(calibrateOtpMinutes(35, 42, 'transit')).toBe(35)
   })
 
   it('calibrates continuously around the former four-minute seam', () => {
@@ -83,8 +94,7 @@ describe('OpenTripPlanner travel-time surfaces', () => {
     expect(otpModesForTransport('transit')).toBe('WALK,SUBWAY,BUS,TRAM')
   })
 
-  it('keeps faster OTP routes and unreachable cells intact', () => {
-    expect(calibrateOtpMinutes(35, 42)).toBe(35)
+  it('keeps unreachable cells intact', () => {
     expect(calibrateOtpMinutes(121, 80)).toBe(121)
   })
 })
