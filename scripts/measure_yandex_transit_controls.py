@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-"""Measure and cache Yandex transit controls without storing the API key.
+"""Measure and cache strict metro controls through Yandex Maps JS API 2.1.
 
-The Route Details API documents only ``mode=transit``. It does not document a
-metro-only request parameter or a transit vehicle subtype in the response.
-Consequently this script records Yandex's fastest public-transport result and
-marks every measurement as *not proven metro-only*. It deliberately refuses to
-turn such a value into a strict metro reference unless a future response
-contains an explicit metro subtype.
+The API key is read from ``YANDEX_MAPS_API_KEY`` (the former
+``YANDEX_ROUTER_API_KEY`` name remains accepted). The Node helper loads the
+official JavaScript API and uses ``multiRouter.MultiRoute``. A route is marked
+strict metro only when every public-transport segment returned by Yandex is
+explicitly typed ``underground``; walking and transfer segments are allowed.
 """
 
 from __future__ import annotations
@@ -15,36 +14,27 @@ import argparse
 import datetime as dt
 import json
 import os
+import shutil
+import subprocess
 import sys
-import time
-import urllib.error
-import urllib.parse
-import urllib.request
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 
 ROOT = Path(__file__).resolve().parents[1]
 PLAN_PATH = ROOT / "scripts" / "yandex-metro-control-plan.json"
+RUNNER_PATH = ROOT / "scripts" / "yandex-js-route-runner.cjs"
 OUTPUT_PATH = ROOT / "src" / "data" / "yandex-route-controls.json"
 USAGE_PATH = ROOT / ".cache" / "yandex-router-usage.json"
-API_URL = "https://api.routing.yandex.net/v2/route"
-API_DOC_URL = "https://yandex.ru/maps-api/docs/router-api/request.html"
-API_KEY_ENV = "YANDEX_ROUTER_API_KEY"
+API_DOC_URL = (
+    "https://yandex.ru/dev/jsapi-v2-1/doc/ru/v2-1/"
+    "ref/reference/multiRouter.MultiRoute"
+)
+API_KEY_ENV = "YANDEX_MAPS_API_KEY"
+LEGACY_API_KEY_ENV = "YANDEX_ROUTER_API_KEY"
 DEFAULT_REFERER = "http://localhost:5173/"
 DAILY_LIMIT = 1_000
 DEFAULT_MAX_NEW_REQUESTS = 30
-REQUEST_DELAY_SECONDS = 0.05
-METRO_SUBTYPES = {
-    "metro",
-    "subway",
-    "underground",
-}
-SUBTYPE_KEYS = {
-    "transport_type",
-    "transit_type",
-    "vehicle_type",
-}
 
 
 class MeasurementError(RuntimeError):
@@ -74,11 +64,6 @@ def coordinates(value: Any) -> tuple[float, float]:
     return latitude, longitude
 
 
-def coordinate_text(value: Any) -> str:
-    latitude, longitude = coordinates(value)
-    return f"{latitude:.9f},{longitude:.9f}"
-
-
 def control_id(
     anchor: dict[str, Any],
     destination: dict[str, Any],
@@ -101,7 +86,9 @@ def planned_controls(plan: dict[str, Any]) -> list[dict[str, Any]]:
                     {
                         "id": control_id(anchor, destination, reverse),
                         "anchorId": anchor["id"],
-                        "direction": "to-anchor" if reverse else "from-anchor",
+                        "direction": (
+                            "to-anchor" if reverse else "from-anchor"
+                        ),
                         "sector": destination["direction"],
                         "origin": {
                             "name": origin["name"],
@@ -124,135 +111,262 @@ def usage_for_today() -> dict[str, Any]:
     return usage
 
 
-def reserve_request(usage: dict[str, Any]) -> None:
-    if int(usage["requests"]) >= DAILY_LIMIT:
+def ensure_capacity(usage: dict[str, Any], requested: int) -> None:
+    used = int(usage.get("requests", 0))
+    if used + requested > DAILY_LIMIT:
         raise MeasurementError(
-            f"Daily safety limit reached ({DAILY_LIMIT} requests)."
+            f"This run could exceed the daily safety limit: "
+            f"{used} used + {requested} planned > {DAILY_LIMIT}."
         )
-    usage["requests"] = int(usage["requests"]) + 1
+
+
+def reserve_request(usage: dict[str, Any]) -> None:
+    usage["requests"] = int(usage.get("requests", 0)) + 1
     write_json(USAGE_PATH, usage)
 
 
-def yandex_request(
-    api_key: str,
-    control: dict[str, Any],
+def api_key_from_environment() -> str:
+    return (
+        os.getenv(API_KEY_ENV, "").strip()
+        or os.getenv(LEGACY_API_KEY_ENV, "").strip()
+    )
+
+
+def runner_requests(controls: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        {
+            "id": control["id"],
+            "origin": control["origin"]["coordinates"],
+            "destination": control["destination"]["coordinates"],
+        }
+        for control in controls
+    ]
+
+
+def run_yandex_requests(
+    requests: list[dict[str, Any]],
     referer: str,
-    usage: dict[str, Any],
-) -> dict[str, Any]:
-    reserve_request(usage)
-    query = urllib.parse.urlencode(
-        {
-            "apikey": api_key,
-            "waypoints": "|".join(
-                (
-                    coordinate_text(control["origin"]["coordinates"]),
-                    coordinate_text(control["destination"]["coordinates"]),
-                )
-            ),
-            "mode": "transit",
-            "results": 3,
-        }
-    )
-    request = urllib.request.Request(
-        f"{API_URL}?{query}",
-        headers={
-            "Accept": "application/json",
-            "Referer": referer,
-            "User-Agent": "time-checker-control-measurements/1.0",
-        },
-    )
-    try:
-        with urllib.request.urlopen(request, timeout=45) as response:
-            return json.load(response)
-    except urllib.error.HTTPError as error:
-        details = error.read().decode("utf-8", errors="replace")[:500]
-        if error.code in (401, 403):
-            raise MeasurementError(
-                "Yandex rejected the API key. Check that it belongs to the "
-                "Route Details API, wait 15 minutes after creation, and verify "
-                f"its IP/domain restrictions. HTTP {error.code}: {details}"
-            ) from error
-        if error.code == 429:
-            raise MeasurementError(
-                f"Yandex daily or per-second limit was exceeded: {details}"
-            ) from error
+) -> Iterator[dict[str, Any]]:
+    node = shutil.which("node")
+    if not node:
         raise MeasurementError(
-            f"Yandex returned HTTP {error.code}: {details}"
-        ) from error
-    except (TimeoutError, urllib.error.URLError) as error:
-        raise MeasurementError(f"Yandex request failed: {error}") from error
-
-
-def routes_from_response(response: dict[str, Any]) -> list[dict[str, Any]]:
-    if isinstance(response.get("routes"), list):
-        return response["routes"]
-    if isinstance(response.get("route"), dict):
-        return [response["route"]]
-    raise MeasurementError("Yandex response contains neither route nor routes.")
-
-
-def explicit_subtypes(value: Any) -> set[str]:
-    result: set[str] = set()
-    if isinstance(value, dict):
-        for key, nested in value.items():
-            if key in SUBTYPE_KEYS and isinstance(nested, str):
-                result.add(nested.lower())
-            result.update(explicit_subtypes(nested))
-    elif isinstance(value, list):
-        for nested in value:
-            result.update(explicit_subtypes(nested))
-    return result
-
-
-def summarize_route(route: dict[str, Any], index: int) -> dict[str, Any]:
-    steps = [
-        step
-        for leg in route.get("legs", [])
-        for step in leg.get("steps", [])
-        if isinstance(step, dict)
-    ]
-    duration_seconds = sum(float(step.get("duration", 0)) for step in steps)
-    length_meters = sum(float(step.get("length", 0)) for step in steps)
-    modes = sorted(
-        {
-            str(step["mode"])
-            for step in steps
-            if isinstance(step.get("mode"), str)
-        }
+            "Node.js is required for Yandex Maps JavaScript API measurements."
+        )
+    process = subprocess.Popen(
+        [node, str(RUNNER_PATH)],
+        cwd=ROOT,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        encoding="utf-8",
     )
-    subtypes = explicit_subtypes(route)
-    metro_only_verified = bool(subtypes) and subtypes <= METRO_SUBTYPES
-    return {
-        "alternative": index + 1,
-        "durationSeconds": round(duration_seconds),
-        "durationMinutes": round(duration_seconds / 60, 2),
-        "lengthMeters": round(length_meters),
-        "stepCount": len(steps),
-        "documentedModes": modes,
-        "explicitTransitSubtypes": sorted(subtypes),
-        "metroOnlyVerified": metro_only_verified,
-    }
+    assert process.stdin is not None
+    assert process.stdout is not None
+    assert process.stderr is not None
+    process.stdin.write(
+        json.dumps(
+            {
+                "referer": referer,
+                "requests": requests,
+            },
+            ensure_ascii=False,
+        )
+    )
+    process.stdin.close()
+    try:
+        for line in process.stdout:
+            try:
+                message = json.loads(line)
+            except json.JSONDecodeError as error:
+                raise MeasurementError(
+                    f"Yandex JS runner returned invalid output: {line[:200]}"
+                ) from error
+            yield message
+    finally:
+        process.stdout.close()
+    stderr = process.stderr.read().strip()
+    process.stderr.close()
+    return_code = process.wait()
+    if return_code and stderr:
+        raise MeasurementError(
+            f"Yandex JS runner failed with exit code {return_code}: "
+            f"{stderr[:500]}"
+        )
+    if return_code:
+        raise MeasurementError(
+            f"Yandex JS runner failed with exit code {return_code}."
+        )
 
 
-def summarize_response(response: dict[str, Any]) -> dict[str, Any]:
-    alternatives = [
-        summarize_route(route, index)
-        for index, route in enumerate(routes_from_response(response))
+def run_yandex_js(
+    controls: list[dict[str, Any]],
+    referer: str,
+) -> Iterator[dict[str, Any]]:
+    if not controls:
+        return iter(())
+    return run_yandex_requests(runner_requests(controls), referer)
+
+
+def normalized_routes(routes: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    valid = [
+        route
+        for route in routes
+        if isinstance(route.get("durationSeconds"), (int, float))
+        and route["durationSeconds"] >= 0
     ]
-    if not alternatives:
-        raise MeasurementError("Yandex returned an empty route list.")
+    if not valid:
+        raise MeasurementError("Yandex returned no usable route alternatives.")
+    alternatives = []
+    for route in valid:
+        seconds = round(float(route["durationSeconds"]))
+        alternatives.append(
+            {
+                **route,
+                "durationSeconds": seconds,
+                "durationMinutes": round(seconds / 60, 2),
+            }
+        )
+    return alternatives
+
+
+def summarize_routes(routes: list[dict[str, Any]]) -> dict[str, Any]:
+    alternatives = normalized_routes(routes)
     fastest = min(alternatives, key=lambda route: route["durationSeconds"])
-    verified = [route for route in alternatives if route["metroOnlyVerified"]]
+    metro_routes = [
+        route
+        for route in alternatives
+        if route.get("metroOnlyVerified") is True
+    ]
     strict_metro = (
-        min(verified, key=lambda route: route["durationSeconds"])
-        if verified
+        min(metro_routes, key=lambda route: route["durationSeconds"])
+        if metro_routes
         else None
     )
     return {
         "fastestTransitMinutes": fastest["durationMinutes"],
-        "strictMetroMinutes": strict_metro["durationMinutes"] if strict_metro else None,
+        "strictMetroMinutes": (
+            strict_metro["durationMinutes"] if strict_metro else None
+        ),
         "strictMetroVerified": strict_metro is not None,
         "alternatives": alternatives,
+    }
+
+
+def fallback_requests(
+    control: dict[str, Any],
+    entries: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    requests: list[dict[str, Any]] = []
+    for entry in entries:
+        coordinates(entry["coordinates"])
+        prefix = f"{control['id']}--fallback-{entry['id']}"
+        requests.extend(
+            [
+                {
+                    "id": f"{prefix}--walk",
+                    "origin": control["origin"]["coordinates"],
+                    "destination": entry["coordinates"],
+                    "routingMode": "pedestrian",
+                },
+                {
+                    "id": f"{prefix}--metro",
+                    "origin": entry["coordinates"],
+                    "destination": control["destination"]["coordinates"],
+                    "routingMode": "masstransit",
+                },
+            ]
+        )
+    return requests
+
+
+def numeric_sum(*values: Any) -> float | None:
+    if not all(isinstance(value, (int, float)) for value in values):
+        return None
+    return sum(float(value) for value in values)
+
+
+def assemble_fallback_alternative(
+    control: dict[str, Any],
+    entry: dict[str, Any],
+    results: dict[str, list[dict[str, Any]]],
+) -> dict[str, Any] | None:
+    prefix = f"{control['id']}--fallback-{entry['id']}"
+    walk_routes = normalized_routes(results.get(f"{prefix}--walk", []))
+    metro_routes = normalized_routes(results.get(f"{prefix}--metro", []))
+    access = min(walk_routes, key=lambda route: route["durationSeconds"])
+    strict_routes = [
+        route
+        for route in metro_routes
+        if route.get("metroOnlyVerified") is True
+    ]
+    if not strict_routes:
+        return None
+    metro = min(strict_routes, key=lambda route: route["durationSeconds"])
+    seconds = access["durationSeconds"] + metro["durationSeconds"]
+    return {
+        "alternative": f"fallback-{entry['id']}",
+        "durationSeconds": seconds,
+        "durationMinutes": round(seconds / 60, 2),
+        "durationText": f"{round(seconds / 60)} мин",
+        "lengthMeters": numeric_sum(
+            access.get("lengthMeters"), metro.get("lengthMeters")
+        ),
+        "segmentCount": int(access.get("segmentCount", 0))
+        + int(metro.get("segmentCount", 0)),
+        "transitSegmentCount": int(metro.get("transitSegmentCount", 0)),
+        "walkingSeconds": access["durationSeconds"]
+        + float(metro.get("walkingSeconds", 0)),
+        "transferSeconds": float(metro.get("transferSeconds", 0)),
+        "transitSeconds": float(metro.get("transitSeconds", 0)),
+        "transportTypes": metro.get("transportTypes", []),
+        "transitLines": metro.get("transitLines", []),
+        "metroOnlyVerified": True,
+        "assembledFrom": {
+            "accessMode": "pedestrian",
+            "entryStation": {
+                "id": entry["id"],
+                "name": entry["name"],
+                "coordinates": entry["coordinates"],
+            },
+            "accessDurationSeconds": access["durationSeconds"],
+            "metroDurationSeconds": metro["durationSeconds"],
+        },
+    }
+
+
+def fallback_entries_by_anchor(
+    plan: dict[str, Any],
+) -> dict[str, list[dict[str, Any]]]:
+    return {
+        anchor["id"]: anchor.get("metroFallbackEntries", [])
+        for anchor in plan["anchors"]
+        if anchor.get("metroFallbackEntries")
+    }
+
+
+def measurement_document(
+    controls: list[dict[str, Any]],
+    measured_at: str,
+) -> dict[str, Any]:
+    return {
+        "schemaVersion": 2,
+        "generatedAt": measured_at,
+        "source": {
+            "provider": "Yandex Maps JavaScript API 2.1 MultiRoute",
+            "requestMode": "masstransit",
+            "documentation": API_DOC_URL,
+        },
+        "strictMetroRule": (
+            "Every public-transport segment must contain only transports "
+            "with type=underground; walk and transfer segments are allowed."
+        ),
+        "fallbackRule": (
+            "When the three direct alternatives contain no strict metro "
+            "route, compare explicit pedestrian access to configured entry "
+            "stations plus a separately verified underground-only route."
+        ),
+        "controls": controls,
     }
 
 
@@ -270,7 +384,10 @@ def parse_args() -> argparse.Namespace:
         "--max-new-requests",
         type=int,
         default=DEFAULT_MAX_NEW_REQUESTS,
-        help="Safety cap for this run; the default plan needs 24 requests.",
+        help=(
+            "Safety cap for this run; the default plan needs 24 direct "
+            "requests and currently four fallback requests."
+        ),
     )
     return parser.parse_args()
 
@@ -294,61 +411,148 @@ def main() -> int:
     )
     if len(pending) > args.max_new_requests:
         raise MeasurementError(
-            f"This run needs {len(pending)} new requests, above --max-new-requests="
-            f"{args.max_new_requests}. Increase it explicitly if intentional."
+            f"This run needs {len(pending)} new requests, above "
+            f"--max-new-requests={args.max_new_requests}."
         )
     print(
-        f"Planned controls: {len(controls)}; cached: {len(controls) - len(pending)}; "
+        f"Planned controls: {len(controls)}; "
+        f"cached: {len(controls) - len(pending)}; "
         f"new requests: {len(pending)}."
     )
+    fallback_entries = fallback_entries_by_anchor(plan)
+    cached_fallback_candidates = [
+        previous_by_id[item["id"]]
+        for item in controls
+        if item["id"] in previous_by_id
+        and not previous_by_id[item["id"]].get("strictMetroVerified")
+        and fallback_entries.get(item["anchorId"])
+    ]
+    cached_fallback_request_count = sum(
+        2 * len(fallback_entries[item["anchorId"]])
+        for item in cached_fallback_candidates
+    )
     if args.dry_run:
+        print(
+            "Known strict-metro fallback requests: "
+            f"{cached_fallback_request_count}."
+        )
         return 0
 
-    api_key = os.getenv(API_KEY_ENV, "").strip()
-    if not api_key:
+    if not pending and not cached_fallback_candidates:
+        return 0
+
+    if not api_key_from_environment():
         raise MeasurementError(
             f"Set {API_KEY_ENV} in the current terminal. "
             "The key is never written to disk."
         )
-
     usage = usage_for_today()
-    measured_at = dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat()
-    for index, control in enumerate(pending, start=1):
-        print(f"[{index}/{len(pending)}] {control['id']}")
-        response = yandex_request(api_key, control, args.referer, usage)
-        previous_by_id[control["id"]] = {
-            **control,
+    ensure_capacity(usage, len(pending) + cached_fallback_request_count)
+    measured_at = dt.datetime.now(dt.timezone.utc).replace(
+        microsecond=0
+    ).isoformat()
+    pending_by_id = {item["id"]: item for item in pending}
+    completed = 0
+    for message in run_yandex_js(pending, args.referer):
+        event = message.get("event")
+        control_identifier = message.get("id")
+        if event == "request":
+            reserve_request(usage)
+            print(
+                f"[{completed + 1}/{len(pending)}] "
+                f"{control_identifier}"
+            )
+            continue
+        if event == "error":
+            raise MeasurementError(str(message.get("error", "Yandex failed.")))
+        if event != "result" or control_identifier not in pending_by_id:
+            raise MeasurementError(f"Unexpected runner message: {message!r}")
+        summary = summarize_routes(message.get("routes", []))
+        previous_by_id[control_identifier] = {
+            **pending_by_id[control_identifier],
             "measuredAt": measured_at,
-            **summarize_response(response),
+            **summary,
         }
-        # Persist after every successful request, so a later failure does not
-        # cause already measured routes to consume the quota again.
+        completed += 1
         write_json(
             args.output,
-            {
-                "schemaVersion": 1,
-                "generatedAt": measured_at,
-                "source": {
-                    "provider": "Yandex Route Details API",
-                    "requestMode": "transit",
-                    "documentation": API_DOC_URL,
-                },
-                "limitations": {
-                    "metroOnlyRequestSupported": False,
-                    "reason": (
-                        "The documented API accepts only mode=transit and does not "
-                        "document a public-transport vehicle subtype in its response."
-                    ),
-                },
-                "controls": [
+            measurement_document(
+                [
                     previous_by_id[item["id"]]
                     for item in controls
                     if item["id"] in previous_by_id
                 ],
-            },
+                measured_at,
+            ),
         )
-        if index < len(pending):
-            time.sleep(REQUEST_DELAY_SECONDS)
+
+    fallback_candidates = [
+        previous_by_id[item["id"]]
+        for item in controls
+        if item["id"] in previous_by_id
+        and not previous_by_id[item["id"]].get("strictMetroVerified")
+        and fallback_entries.get(item["anchorId"])
+    ]
+    fallback_request_count = sum(
+        2 * len(fallback_entries[item["anchorId"]])
+        for item in fallback_candidates
+    )
+    total_run_requests = len(pending) + fallback_request_count
+    if total_run_requests > args.max_new_requests:
+        raise MeasurementError(
+            f"Direct and fallback measurements need {total_run_requests} "
+            f"requests, above --max-new-requests={args.max_new_requests}."
+        )
+    ensure_capacity(usage, fallback_request_count)
+    for control in fallback_candidates:
+        entries = fallback_entries[control["anchorId"]]
+        requests = fallback_requests(control, entries)
+        results: dict[str, list[dict[str, Any]]] = {}
+        print(
+            f"Checking strict-metro station fallbacks for {control['id']} "
+            f"({len(requests)} requests)."
+        )
+        for message in run_yandex_requests(requests, args.referer):
+            event = message.get("event")
+            request_id = message.get("id")
+            if event == "request":
+                reserve_request(usage)
+                continue
+            if event == "error":
+                raise MeasurementError(
+                    str(message.get("error", "Yandex failed."))
+                )
+            if event != "result" or not isinstance(request_id, str):
+                raise MeasurementError(
+                    f"Unexpected fallback runner message: {message!r}"
+                )
+            results[request_id] = message.get("routes", [])
+        assembled = [
+            alternative
+            for entry in entries
+            if (
+                alternative := assemble_fallback_alternative(
+                    control, entry, results
+                )
+            )
+            is not None
+        ]
+        if not assembled:
+            print(f"No strict metro fallback found for {control['id']}.")
+            continue
+        summary = summarize_routes(control["alternatives"] + assembled)
+        previous_by_id[control["id"]] = {
+            **control,
+            "measuredAt": measured_at,
+            **summary,
+        }
+        write_json(
+            args.output,
+            measurement_document(
+                [previous_by_id[item["id"]] for item in controls],
+                measured_at,
+            ),
+        )
 
     strict_count = sum(
         bool(item.get("strictMetroVerified"))
@@ -356,14 +560,8 @@ def main() -> int:
     )
     print(
         f"Saved {len(previous_by_id)} controls to {args.output}. "
-        f"Strict metro controls verified by the response: {strict_count}."
+        f"Strict metro controls: {strict_count}."
     )
-    if strict_count == 0:
-        print(
-            "Yandex returned only generic transit data; these values must not be "
-            "presented as strict metro references.",
-            file=sys.stderr,
-        )
     return 0
 
 

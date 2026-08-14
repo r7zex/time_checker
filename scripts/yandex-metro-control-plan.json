@@ -9,7 +9,19 @@
     {
       "id": "rudn-ordzhonikidze",
       "name": "РУДН на Орджоникидзе",
-      "coordinates": [55.71068, 37.603253]
+      "coordinates": [55.71068, 37.603253],
+      "metroFallbackEntries": [
+        {
+          "id": "leninsky-prospekt",
+          "name": "Метро Ленинский проспект",
+          "coordinates": [55.7075, 37.586388888]
+        },
+        {
+          "id": "shabolovskaya",
+          "name": "Метро Шаболовская",
+          "coordinates": [55.718611111, 37.607777777]
+        }
+      ]
     }
   ],
   "destinations": [

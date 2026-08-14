@@ -1,0 +1,2388 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-14T00:29:34+00:00",
+  "source": {
+    "provider": "Yandex Maps JavaScript API 2.1 MultiRoute",
+    "requestMode": "masstransit",
+    "documentation": "https://yandex.ru/dev/jsapi-v2-1/doc/ru/v2-1/ref/reference/multiRouter.MultiRoute"
+  },
+  "strictMetroRule": "Every public-transport segment must contain only transports with type=underground; walk and transfer segments are allowed.",
+  "fallbackRule": "When the three direct alternatives contain no strict metro route, compare explicit pedestrian access to configured entry stations plus a separately verified underground-only route.",
+  "controls": [
+    {
+      "id": "central-telegraph--medvedkovo--from-anchor",
+      "anchorId": "central-telegraph",
+      "direction": "from-anchor",
+      "sector": "north",
+      "origin": {
+        "name": "Центральный телеграф",
+        "coordinates": [
+          55.758272,
+          37.611014
+        ]
+      },
+      "destination": {
+        "name": "Метро Медведково",
+        "coordinates": [
+          55.887222222,
+          37.661388888
+        ]
+      },
+      "measuredAt": "2026-08-14T00:20:06+00:00",
+      "fastestTransitMinutes": 41.4,
+      "strictMetroMinutes": 41.4,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 2484,
+          "durationText": "41 мин",
+          "lengthMeters": 16988.17818887867,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 540,
+          "transferSeconds": 150,
+          "transitSeconds": 1555,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Калужско-Рижская линия",
+            "Сокольническая линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 41.4
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 3164,
+          "durationText": "53 мин",
+          "lengthMeters": 18248.607476570156,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 522,
+          "transferSeconds": 0,
+          "transitSeconds": 1760,
+          "transportTypes": [
+            "bus",
+            "underground"
+          ],
+          "transitLines": [
+            "Калужско-Рижская линия",
+            "е30",
+            "н1",
+            "н12"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 52.73
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 5516,
+          "durationText": "1 ч 32 мин",
+          "lengthMeters": 19860.22160872898,
+          "segmentCount": 6,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 1393,
+          "transferSeconds": 0,
+          "transitSeconds": 3060,
+          "transportTypes": [
+            "bus",
+            "tramway"
+          ],
+          "transitLines": [
+            "17",
+            "903",
+            "м2",
+            "м9"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 91.93
+        }
+      ]
+    },
+    {
+      "id": "central-telegraph--medvedkovo--to-anchor",
+      "anchorId": "central-telegraph",
+      "direction": "to-anchor",
+      "sector": "north",
+      "origin": {
+        "name": "Метро Медведково",
+        "coordinates": [
+          55.887222222,
+          37.661388888
+        ]
+      },
+      "destination": {
+        "name": "Центральный телеграф",
+        "coordinates": [
+          55.758272,
+          37.611014
+        ]
+      },
+      "measuredAt": "2026-08-14T00:20:06+00:00",
+      "fastestTransitMinutes": 42.35,
+      "strictMetroMinutes": 42.35,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 2541,
+          "durationText": "42 мин",
+          "lengthMeters": 16966.85383603935,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 547,
+          "transferSeconds": 150,
+          "transitSeconds": 1555,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Калужско-Рижская линия",
+            "Сокольническая линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 42.35
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 3009,
+          "durationText": "50 мин",
+          "lengthMeters": 20902.530420319745,
+          "segmentCount": 7,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 547,
+          "transferSeconds": 400,
+          "transitSeconds": 1770,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Замоскворецкая линия",
+            "Калужско-Рижская линия",
+            "Сокольническая линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 50.15
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 3200,
+          "durationText": "53 мин",
+          "lengthMeters": 17552.573583022044,
+          "segmentCount": 3,
+          "transitSegmentCount": 1,
+          "walkingSeconds": 1609,
+          "transferSeconds": 0,
+          "transitSeconds": 1445,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Калужско-Рижская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 53.33
+        }
+      ]
+    },
+    {
+      "id": "central-telegraph--novokosino--from-anchor",
+      "anchorId": "central-telegraph",
+      "direction": "from-anchor",
+      "sector": "east",
+      "origin": {
+        "name": "Центральный телеграф",
+        "coordinates": [
+          55.758272,
+          37.611014
+        ]
+      },
+      "destination": {
+        "name": "Метро Новокосино",
+        "coordinates": [
+          55.7452,
+          37.864
+        ]
+      },
+      "measuredAt": "2026-08-14T00:20:06+00:00",
+      "fastestTransitMinutes": 46.87,
+      "strictMetroMinutes": 46.87,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 2812,
+          "durationText": "47 мин",
+          "lengthMeters": 18563.73513722008,
+          "segmentCount": 7,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 673,
+          "transferSeconds": 265,
+          "transitSeconds": 1485,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Калининская линия",
+            "Люблинско-Дмитровская линия",
+            "Сокольническая линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 46.87
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 2823,
+          "durationText": "47 мин",
+          "lengthMeters": 19114.66880913311,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 972,
+          "transferSeconds": 160,
+          "transitSeconds": 1395,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Замоскворецкая линия",
+            "Калининская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 47.05
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 4987,
+          "durationText": "1 ч 23 мин",
+          "lengthMeters": 19828.170995762277,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 1578,
+          "transferSeconds": 0,
+          "transitSeconds": 2505,
+          "transportTypes": [
+            "bus",
+            "suburban"
+          ],
+          "transitLines": [
+            "Апрелевка - Балашиха",
+            "Апрелевка - Владимир",
+            "Апрелевка - Железнодорожная",
+            "Апрелевка - Захарово",
+            "Апрелевка - Крутое",
+            "Апрелевка - Купавна",
+            "Апрелевка - Павловский Посад",
+            "Апрелевка - Петушки",
+            "Апрелевка - Фрязево",
+            "Апрелевка - Храпуново",
+            "Апрелевка - Электрогорск",
+            "Лесной Городок - Балашиха",
+            "Лесной Городок - Железнодорожная",
+            "Лесной Городок - Захарово",
+            "Лесной Городок - Крутое",
+            "Лесной Городок - Купавна",
+            "Лесной Городок - Петушки",
+            "Лесной Городок - Фрязево",
+            "Лесной Городок - Храпуново",
+            "Лесной Городок - Электрогорск",
+            "Москва (Курский вокзал) - Балашиха",
+            "Москва (Курский вокзал) - Владимир",
+            "Москва (Курский вокзал) - Железнодорожная",
+            "Москва (Курский вокзал) - Захарово",
+            "Москва (Курский вокзал) - Крутое",
+            "Москва (Курский вокзал) - Петушки",
+            "Москва (Курский вокзал) - Электрогорск",
+            "Нижегородская (МЦД-4) - Балашиха",
+            "Нижегородская (МЦД-4) - Железнодорожная",
+            "Нижегородская (МЦД-4) - Захарово",
+            "Нижегородская (МЦД-4) - Крутое",
+            "Нижегородская (МЦД-4) - Купавна",
+            "Нижегородская (МЦД-4) - Петушки",
+            "Нижегородская (МЦД-4) - Реутов",
+            "Нижегородская (МЦД-4) - Фрязево",
+            "Нижегородская (МЦД-4) - Электрогорск",
+            "Очаково - Балашиха",
+            "Очаково - Железнодорожная",
+            "Очаково - Крутое",
+            "Очаково - Петушки",
+            "Площадь трёх вокзалов (Каланчёвская) - Балашиха",
+            "Площадь трёх вокзалов (Каланчёвская) - Владимир",
+            "Площадь трёх вокзалов (Каланчёвская) - Железнодорожная",
+            "Площадь трёх вокзалов (Каланчёвская) - Захарово",
+            "Площадь трёх вокзалов (Каланчёвская) - Крутое",
+            "Площадь трёх вокзалов (Каланчёвская) - Купавна",
+            "Площадь трёх вокзалов (Каланчёвская) - Петушки",
+            "Площадь трёх вокзалов (Каланчёвская) - Фрязево",
+            "Площадь трёх вокзалов (Каланчёвская) - Электрогорск",
+            "Поклонная - Балашиха",
+            "Поклонная - Железнодорожная",
+            "Поклонная - Захарово",
+            "Поклонная - Крутое",
+            "Поклонная - Купавна",
+            "Поклонная - Петушки",
+            "Поклонная - Фрязево",
+            "Солнечная - Балашиха",
+            "Солнечная - Железнодорожная",
+            "Солнечная - Крутое",
+            "Солнечная - Электрогорск",
+            "м7"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 83.12
+        }
+      ]
+    },
+    {
+      "id": "central-telegraph--novokosino--to-anchor",
+      "anchorId": "central-telegraph",
+      "direction": "to-anchor",
+      "sector": "east",
+      "origin": {
+        "name": "Метро Новокосино",
+        "coordinates": [
+          55.7452,
+          37.864
+        ]
+      },
+      "destination": {
+        "name": "Центральный телеграф",
+        "coordinates": [
+          55.758272,
+          37.611014
+        ]
+      },
+      "measuredAt": "2026-08-14T00:20:06+00:00",
+      "fastestTransitMinutes": 46.07,
+      "strictMetroMinutes": 46.07,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 2764,
+          "durationText": "46 мин",
+          "lengthMeters": 18970.495699181723,
+          "segmentCount": 7,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 673,
+          "transferSeconds": 400,
+          "transitSeconds": 1395,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Замоскворецкая линия",
+            "Калининская линия",
+            "Сокольническая линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 46.07
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 2862,
+          "durationText": "48 мин",
+          "lengthMeters": 18563.74302279959,
+          "segmentCount": 7,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 673,
+          "transferSeconds": 265,
+          "transitSeconds": 1485,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Калининская линия",
+            "Люблинско-Дмитровская линия",
+            "Сокольническая линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 47.7
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 4102,
+          "durationText": "1 ч 8 мин",
+          "lengthMeters": 19370.90409478113,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 986,
+          "transferSeconds": 0,
+          "transitSeconds": 2050,
+          "transportTypes": [
+            "bus",
+            "underground"
+          ],
+          "transitLines": [
+            "Калининская линия",
+            "м7"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 68.37
+        }
+      ]
+    },
+    {
+      "id": "central-telegraph--domodedovskaya--from-anchor",
+      "anchorId": "central-telegraph",
+      "direction": "from-anchor",
+      "sector": "south-east",
+      "origin": {
+        "name": "Центральный телеграф",
+        "coordinates": [
+          55.758272,
+          37.611014
+        ]
+      },
+      "destination": {
+        "name": "Метро Домодедовская",
+        "coordinates": [
+          55.610833333,
+          37.719722222
+        ]
+      },
+      "measuredAt": "2026-08-14T00:20:06+00:00",
+      "fastestTransitMinutes": 43.2,
+      "strictMetroMinutes": 43.2,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 2592,
+          "durationText": "43 мин",
+          "lengthMeters": 21423.86399182037,
+          "segmentCount": 3,
+          "transitSegmentCount": 1,
+          "walkingSeconds": 796,
+          "transferSeconds": 0,
+          "transitSeconds": 1650,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Замоскворецкая линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 43.2
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 3632,
+          "durationText": "1 ч 1 мин",
+          "lengthMeters": 27378.742353249094,
+          "segmentCount": 7,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 497,
+          "transferSeconds": 320,
+          "transitSeconds": 2430,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Замоскворецкая линия",
+            "Люблинско-Дмитровская линия",
+            "Сокольническая линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 60.53
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 3664,
+          "durationText": "1 ч 1 мин",
+          "lengthMeters": 20776.0671492304,
+          "segmentCount": 7,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 700,
+          "transferSeconds": 220,
+          "transitSeconds": 1975,
+          "transportTypes": [
+            "bus",
+            "underground"
+          ],
+          "transitLines": [
+            "Серпуховско-Тимирязевская линия",
+            "Сокольническая линия",
+            "е85"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 61.07
+        }
+      ]
+    },
+    {
+      "id": "central-telegraph--domodedovskaya--to-anchor",
+      "anchorId": "central-telegraph",
+      "direction": "to-anchor",
+      "sector": "south-east",
+      "origin": {
+        "name": "Метро Домодедовская",
+        "coordinates": [
+          55.610833333,
+          37.719722222
+        ]
+      },
+      "destination": {
+        "name": "Центральный телеграф",
+        "coordinates": [
+          55.758272,
+          37.611014
+        ]
+      },
+      "measuredAt": "2026-08-14T00:20:06+00:00",
+      "fastestTransitMinutes": 42.13,
+      "strictMetroMinutes": 42.13,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 2528,
+          "durationText": "42 мин",
+          "lengthMeters": 21279.969939183266,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 497,
+          "transferSeconds": 240,
+          "transitSeconds": 1645,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Замоскворецкая линия",
+            "Сокольническая линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 42.13
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 3682,
+          "durationText": "1 ч 1 мин",
+          "lengthMeters": 27378.50680650245,
+          "segmentCount": 7,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 497,
+          "transferSeconds": 320,
+          "transitSeconds": 2430,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Замоскворецкая линия",
+            "Люблинско-Дмитровская линия",
+            "Сокольническая линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 61.37
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 3718,
+          "durationText": "1 ч 2 мин",
+          "lengthMeters": 20629.72382194592,
+          "segmentCount": 7,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 608,
+          "transferSeconds": 220,
+          "transitSeconds": 2155,
+          "transportTypes": [
+            "bus",
+            "underground"
+          ],
+          "transitLines": [
+            "Серпуховско-Тимирязевская линия",
+            "Сокольническая линия",
+            "е85"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 61.97
+        }
+      ]
+    },
+    {
+      "id": "central-telegraph--rasskazovka--from-anchor",
+      "anchorId": "central-telegraph",
+      "direction": "from-anchor",
+      "sector": "south-west",
+      "origin": {
+        "name": "Центральный телеграф",
+        "coordinates": [
+          55.758272,
+          37.611014
+        ]
+      },
+      "destination": {
+        "name": "Метро Рассказовка",
+        "coordinates": [
+          55.633,
+          37.3328
+        ]
+      },
+      "measuredAt": "2026-08-14T00:20:06+00:00",
+      "fastestTransitMinutes": 60.17,
+      "strictMetroMinutes": 60.17,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 3610,
+          "durationText": "1 ч",
+          "lengthMeters": 27806.60349426245,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 1017,
+          "transferSeconds": 40,
+          "transitSeconds": 2210,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Арбатско-Покровская линия",
+            "Солнцевская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 60.17
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 3695,
+          "durationText": "1 ч 2 мин",
+          "lengthMeters": 28149.30685011355,
+          "segmentCount": 7,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 609,
+          "transferSeconds": 280,
+          "transitSeconds": 2320,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Арбатско-Покровская линия",
+            "Сокольническая линия",
+            "Солнцевская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 61.58
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 4535,
+          "durationText": "1 ч 16 мин",
+          "lengthMeters": 29076.76550757239,
+          "segmentCount": 7,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 976,
+          "transferSeconds": 0,
+          "transitSeconds": 2680,
+          "transportTypes": [
+            "bus",
+            "suburban"
+          ],
+          "transitLines": [
+            "255",
+            "Балашиха - Апрелевка",
+            "Балашиха - Крёкшино",
+            "Балашиха - Лесной Городок",
+            "Владимир - Апрелевка",
+            "Железнодорожная - Апрелевка",
+            "Железнодорожная - Лесной Городок",
+            "Захарово - Апрелевка",
+            "Захарово - Лесной Городок",
+            "Крутое - Апрелевка",
+            "Крутое - Крёкшино",
+            "Крутое - Лесной Городок",
+            "Купавна - Апрелевка",
+            "Купавна - Лесной Городок",
+            "Марьина Роща - Апрелевка",
+            "Марьина Роща - Лесной Городок",
+            "Москва (Белорусский вокзал) - Апрелевка",
+            "Москва-Сити (Тестовская, МЦД-4) - Апрелевка",
+            "Павловский Посад - Апрелевка",
+            "Павловский Посад - Лесной Городок",
+            "Петушки - Апрелевка",
+            "Петушки - Лесной Городок",
+            "Площадь трёх вокзалов (Каланчёвская) - Апрелевка",
+            "Фрязево - Апрелевка",
+            "Фрязево - Лесной Городок",
+            "Храпуново - Апрелевка",
+            "Электрогорск - Апрелевка",
+            "Электрогорск - Лесной Городок",
+            "м2",
+            "м7",
+            "н2"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 75.58
+        }
+      ]
+    },
+    {
+      "id": "central-telegraph--rasskazovka--to-anchor",
+      "anchorId": "central-telegraph",
+      "direction": "to-anchor",
+      "sector": "south-west",
+      "origin": {
+        "name": "Метро Рассказовка",
+        "coordinates": [
+          55.633,
+          37.3328
+        ]
+      },
+      "destination": {
+        "name": "Центральный телеграф",
+        "coordinates": [
+          55.758272,
+          37.611014
+        ]
+      },
+      "measuredAt": "2026-08-14T00:20:06+00:00",
+      "fastestTransitMinutes": 59.02,
+      "strictMetroMinutes": 59.02,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 3541,
+          "durationText": "59 мин",
+          "lengthMeters": 27806.513086121427,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 1017,
+          "transferSeconds": 40,
+          "transitSeconds": 2210,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Арбатско-Покровская линия",
+            "Солнцевская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 59.02
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 3576,
+          "durationText": "1 ч",
+          "lengthMeters": 28149.21803579458,
+          "segmentCount": 7,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 609,
+          "transferSeconds": 280,
+          "transitSeconds": 2320,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Арбатско-Покровская линия",
+            "Сокольническая линия",
+            "Солнцевская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 59.6
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 3801,
+          "durationText": "1 ч 3 мин",
+          "lengthMeters": 26741.350735195505,
+          "segmentCount": 7,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 609,
+          "transferSeconds": 430,
+          "transitSeconds": 2385,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Большая кольцевая линия",
+            "Сокольническая линия",
+            "Солнцевская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 63.35
+        }
+      ]
+    },
+    {
+      "id": "central-telegraph--pyatnitskoye-shosse--from-anchor",
+      "anchorId": "central-telegraph",
+      "direction": "from-anchor",
+      "sector": "west",
+      "origin": {
+        "name": "Центральный телеграф",
+        "coordinates": [
+          55.758272,
+          37.611014
+        ]
+      },
+      "destination": {
+        "name": "Метро Пятницкое шоссе",
+        "coordinates": [
+          55.853634,
+          37.353108
+        ]
+      },
+      "measuredAt": "2026-08-14T00:20:06+00:00",
+      "fastestTransitMinutes": 59.1,
+      "strictMetroMinutes": 59.1,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 3546,
+          "durationText": "59 мин",
+          "lengthMeters": 29726.176161700027,
+          "segmentCount": 3,
+          "transitSegmentCount": 1,
+          "walkingSeconds": 1003,
+          "transferSeconds": 0,
+          "transitSeconds": 2395,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Арбатско-Покровская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 59.1
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 3631,
+          "durationText": "1 ч 1 мин",
+          "lengthMeters": 30068.87951755027,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 595,
+          "transferSeconds": 240,
+          "transitSeconds": 2505,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Арбатско-Покровская линия",
+            "Сокольническая линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 60.52
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 4122,
+          "durationText": "1 ч 9 мин",
+          "lengthMeters": 21691.301090817396,
+          "segmentCount": 3,
+          "transitSegmentCount": 1,
+          "walkingSeconds": 747,
+          "transferSeconds": 0,
+          "transitSeconds": 2640,
+          "transportTypes": [
+            "bus"
+          ],
+          "transitLines": [
+            "е30"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 68.7
+        }
+      ]
+    },
+    {
+      "id": "central-telegraph--pyatnitskoye-shosse--to-anchor",
+      "anchorId": "central-telegraph",
+      "direction": "to-anchor",
+      "sector": "west",
+      "origin": {
+        "name": "Метро Пятницкое шоссе",
+        "coordinates": [
+          55.853634,
+          37.353108
+        ]
+      },
+      "destination": {
+        "name": "Центральный телеграф",
+        "coordinates": [
+          55.758272,
+          37.611014
+        ]
+      },
+      "measuredAt": "2026-08-14T00:20:06+00:00",
+      "fastestTransitMinutes": 59.27,
+      "strictMetroMinutes": 59.27,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 3556,
+          "durationText": "59 мин",
+          "lengthMeters": 29725.88119768277,
+          "segmentCount": 3,
+          "transitSegmentCount": 1,
+          "walkingSeconds": 1003,
+          "transferSeconds": 0,
+          "transitSeconds": 2405,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Арбатско-Покровская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 59.27
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 3591,
+          "durationText": "1 ч",
+          "lengthMeters": 30068.586147356236,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 595,
+          "transferSeconds": 240,
+          "transitSeconds": 2515,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Арбатско-Покровская линия",
+            "Сокольническая линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 59.85
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 4181,
+          "durationText": "1 ч 10 мин",
+          "lengthMeters": 21224.13964404715,
+          "segmentCount": 3,
+          "transitSegmentCount": 1,
+          "walkingSeconds": 549,
+          "transferSeconds": 0,
+          "transitSeconds": 2880,
+          "transportTypes": [
+            "bus"
+          ],
+          "transitLines": [
+            "е30"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 69.68
+        }
+      ]
+    },
+    {
+      "id": "central-telegraph--planernaya--from-anchor",
+      "anchorId": "central-telegraph",
+      "direction": "from-anchor",
+      "sector": "north-west",
+      "origin": {
+        "name": "Центральный телеграф",
+        "coordinates": [
+          55.758272,
+          37.611014
+        ]
+      },
+      "destination": {
+        "name": "Метро Планерная",
+        "coordinates": [
+          55.861747833,
+          37.435977
+        ]
+      },
+      "measuredAt": "2026-08-14T00:20:06+00:00",
+      "fastestTransitMinutes": 42.53,
+      "strictMetroMinutes": 42.53,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 2552,
+          "durationText": "43 мин",
+          "lengthMeters": 21233.76647015081,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 455,
+          "transferSeconds": 115,
+          "transitSeconds": 1750,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Сокольническая линия",
+            "Таганско-Краснопресненская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 42.53
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 2697,
+          "durationText": "45 мин",
+          "lengthMeters": 19501.36949501461,
+          "segmentCount": 3,
+          "transitSegmentCount": 1,
+          "walkingSeconds": 1048,
+          "transferSeconds": 0,
+          "transitSeconds": 1510,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Таганско-Краснопресненская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 44.95
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 2917,
+          "durationText": "49 мин",
+          "lengthMeters": 19474.088437218117,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 612,
+          "transferSeconds": 0,
+          "transitSeconds": 1800,
+          "transportTypes": [
+            "bus",
+            "underground"
+          ],
+          "transitLines": [
+            "Таганско-Краснопресненская линия",
+            "м3",
+            "н14",
+            "с344"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 48.62
+        }
+      ]
+    },
+    {
+      "id": "central-telegraph--planernaya--to-anchor",
+      "anchorId": "central-telegraph",
+      "direction": "to-anchor",
+      "sector": "north-west",
+      "origin": {
+        "name": "Метро Планерная",
+        "coordinates": [
+          55.861747833,
+          37.435977
+        ]
+      },
+      "destination": {
+        "name": "Центральный телеграф",
+        "coordinates": [
+          55.758272,
+          37.611014
+        ]
+      },
+      "measuredAt": "2026-08-14T00:20:06+00:00",
+      "fastestTransitMinutes": 43.37,
+      "strictMetroMinutes": 43.37,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 2602,
+          "durationText": "43 мин",
+          "lengthMeters": 21233.658009180534,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 455,
+          "transferSeconds": 115,
+          "transitSeconds": 1750,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Сокольническая линия",
+            "Таганско-Краснопресненская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 43.37
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 2663,
+          "durationText": "44 мин",
+          "lengthMeters": 19741.08674257908,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 490,
+          "transferSeconds": 0,
+          "transitSeconds": 1675,
+          "transportTypes": [
+            "bus",
+            "underground"
+          ],
+          "transitLines": [
+            "Таганско-Краснопресненская линия",
+            "е30",
+            "м1",
+            "н1",
+            "н12"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 44.38
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 2697,
+          "durationText": "45 мин",
+          "lengthMeters": 19501.38531245553,
+          "segmentCount": 3,
+          "transitSegmentCount": 1,
+          "walkingSeconds": 1048,
+          "transferSeconds": 0,
+          "transitSeconds": 1510,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Таганско-Краснопресненская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 44.95
+        }
+      ]
+    },
+    {
+      "id": "rudn-ordzhonikidze--medvedkovo--from-anchor",
+      "anchorId": "rudn-ordzhonikidze",
+      "direction": "from-anchor",
+      "sector": "north",
+      "origin": {
+        "name": "РУДН на Орджоникидзе",
+        "coordinates": [
+          55.71068,
+          37.603253
+        ]
+      },
+      "destination": {
+        "name": "Метро Медведково",
+        "coordinates": [
+          55.887222222,
+          37.661388888
+        ]
+      },
+      "measuredAt": "2026-08-14T00:20:06+00:00",
+      "fastestTransitMinutes": 51.5,
+      "strictMetroMinutes": 52.25,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 3090,
+          "durationText": "52 мин",
+          "lengthMeters": 24275.15484476387,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 521,
+          "transferSeconds": 0,
+          "transitSeconds": 2230,
+          "transportTypes": [
+            "tramway",
+            "underground"
+          ],
+          "transitLines": [
+            "14",
+            "39",
+            "Калужско-Рижская линия",
+            "Т1"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 51.5
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 3135,
+          "durationText": "52 мин",
+          "lengthMeters": 22121.31715231448,
+          "segmentCount": 3,
+          "transitSegmentCount": 1,
+          "walkingSeconds": 1079,
+          "transferSeconds": 0,
+          "transitSeconds": 1910,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Калужско-Рижская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 52.25
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 3471,
+          "durationText": "58 мин",
+          "lengthMeters": 22547.78681340639,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 506,
+          "transferSeconds": 0,
+          "transitSeconds": 2150,
+          "transportTypes": [
+            "tramway",
+            "underground"
+          ],
+          "transitLines": [
+            "14",
+            "Калужско-Рижская линия"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 57.85
+        }
+      ]
+    },
+    {
+      "id": "rudn-ordzhonikidze--medvedkovo--to-anchor",
+      "anchorId": "rudn-ordzhonikidze",
+      "direction": "to-anchor",
+      "sector": "north",
+      "origin": {
+        "name": "Метро Медведково",
+        "coordinates": [
+          55.887222222,
+          37.661388888
+        ]
+      },
+      "destination": {
+        "name": "РУДН на Орджоникидзе",
+        "coordinates": [
+          55.71068,
+          37.603253
+        ]
+      },
+      "measuredAt": "2026-08-14T00:20:06+00:00",
+      "fastestTransitMinutes": 52.4,
+      "strictMetroMinutes": 52.4,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 3144,
+          "durationText": "52 мин",
+          "lengthMeters": 22100.019996368454,
+          "segmentCount": 3,
+          "transitSegmentCount": 1,
+          "walkingSeconds": 1088,
+          "transferSeconds": 0,
+          "transitSeconds": 1910,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Калужско-Рижская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 52.4
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 3146,
+          "durationText": "52 мин",
+          "lengthMeters": 24279.097371283304,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 568,
+          "transferSeconds": 0,
+          "transitSeconds": 2240,
+          "transportTypes": [
+            "tramway",
+            "underground"
+          ],
+          "transitLines": [
+            "14",
+            "39",
+            "Калужско-Рижская линия",
+            "Т1"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 52.43
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 3393,
+          "durationText": "57 мин",
+          "lengthMeters": 22172.199331896376,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 480,
+          "transferSeconds": 0,
+          "transitSeconds": 2090,
+          "transportTypes": [
+            "tramway",
+            "underground"
+          ],
+          "transitLines": [
+            "14",
+            "Калужско-Рижская линия"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 56.55
+        }
+      ]
+    },
+    {
+      "id": "rudn-ordzhonikidze--novokosino--from-anchor",
+      "anchorId": "rudn-ordzhonikidze",
+      "direction": "from-anchor",
+      "sector": "east",
+      "origin": {
+        "name": "РУДН на Орджоникидзе",
+        "coordinates": [
+          55.71068,
+          37.603253
+        ]
+      },
+      "destination": {
+        "name": "Метро Новокосино",
+        "coordinates": [
+          55.7452,
+          37.864
+        ]
+      },
+      "measuredAt": "2026-08-14T00:20:06+00:00",
+      "fastestTransitMinutes": 50.38,
+      "strictMetroMinutes": 51.13,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 3023,
+          "durationText": "50 мин",
+          "lengthMeters": 22404.98571217058,
+          "segmentCount": 7,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 654,
+          "transferSeconds": 50,
+          "transitSeconds": 1830,
+          "transportTypes": [
+            "tramway",
+            "underground"
+          ],
+          "transitLines": [
+            "14",
+            "39",
+            "Калининская линия",
+            "Калужско-Рижская линия",
+            "Т1"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 50.38
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 3068,
+          "durationText": "51 мин",
+          "lengthMeters": 20251.148019719247,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 1212,
+          "transferSeconds": 50,
+          "transitSeconds": 1510,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Калининская линия",
+            "Калужско-Рижская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 51.13
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 5477,
+          "durationText": "1 ч 31 мин",
+          "lengthMeters": 28308.858575871753,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 1172,
+          "transferSeconds": 0,
+          "transitSeconds": 3920,
+          "transportTypes": [
+            "suburban",
+            "tramway"
+          ],
+          "transitLines": [
+            "Апрелевка - Балашиха",
+            "Апрелевка - Владимир",
+            "Апрелевка - Железнодорожная",
+            "Апрелевка - Захарово",
+            "Апрелевка - Крутое",
+            "Апрелевка - Купавна",
+            "Апрелевка - Павловский Посад",
+            "Апрелевка - Петушки",
+            "Апрелевка - Фрязево",
+            "Апрелевка - Храпуново",
+            "Апрелевка - Электрогорск",
+            "Лесной Городок - Балашиха",
+            "Лесной Городок - Железнодорожная",
+            "Лесной Городок - Захарово",
+            "Лесной Городок - Крутое",
+            "Лесной Городок - Купавна",
+            "Лесной Городок - Петушки",
+            "Лесной Городок - Фрязево",
+            "Лесной Городок - Храпуново",
+            "Лесной Городок - Электрогорск",
+            "Очаково - Балашиха",
+            "Очаково - Железнодорожная",
+            "Очаково - Крутое",
+            "Очаково - Петушки",
+            "Площадь трёх вокзалов (Каланчёвская) - Балашиха",
+            "Площадь трёх вокзалов (Каланчёвская) - Владимир",
+            "Площадь трёх вокзалов (Каланчёвская) - Железнодорожная",
+            "Площадь трёх вокзалов (Каланчёвская) - Захарово",
+            "Площадь трёх вокзалов (Каланчёвская) - Крутое",
+            "Площадь трёх вокзалов (Каланчёвская) - Купавна",
+            "Площадь трёх вокзалов (Каланчёвская) - Петушки",
+            "Площадь трёх вокзалов (Каланчёвская) - Фрязево",
+            "Площадь трёх вокзалов (Каланчёвская) - Электрогорск",
+            "Поклонная - Балашиха",
+            "Поклонная - Железнодорожная",
+            "Поклонная - Захарово",
+            "Поклонная - Крутое",
+            "Поклонная - Купавна",
+            "Поклонная - Петушки",
+            "Поклонная - Фрязево",
+            "Солнечная - Балашиха",
+            "Солнечная - Железнодорожная",
+            "Солнечная - Крутое",
+            "Солнечная - Электрогорск",
+            "Т1"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 91.28
+        }
+      ]
+    },
+    {
+      "id": "rudn-ordzhonikidze--novokosino--to-anchor",
+      "anchorId": "rudn-ordzhonikidze",
+      "direction": "to-anchor",
+      "sector": "east",
+      "origin": {
+        "name": "Метро Новокосино",
+        "coordinates": [
+          55.7452,
+          37.864
+        ]
+      },
+      "destination": {
+        "name": "РУДН на Орджоникидзе",
+        "coordinates": [
+          55.71068,
+          37.603253
+        ]
+      },
+      "measuredAt": "2026-08-14T00:20:06+00:00",
+      "fastestTransitMinutes": 51.25,
+      "strictMetroMinutes": 51.25,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 3075,
+          "durationText": "51 мин",
+          "lengthMeters": 20250.985275231822,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 1214,
+          "transferSeconds": 50,
+          "transitSeconds": 1515,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Калининская линия",
+            "Калужско-Рижская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 51.25
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 3324,
+          "durationText": "55 мин",
+          "lengthMeters": 20323.164610758507,
+          "segmentCount": 7,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 606,
+          "transferSeconds": 50,
+          "transitSeconds": 1695,
+          "transportTypes": [
+            "tramway",
+            "underground"
+          ],
+          "transitLines": [
+            "14",
+            "Калининская линия",
+            "Калужско-Рижская линия"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 55.4
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 3437,
+          "durationText": "57 мин",
+          "lengthMeters": 20710.278281084364,
+          "segmentCount": 7,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 643,
+          "transferSeconds": 95,
+          "transitSeconds": 2135,
+          "transportTypes": [
+            "tramway",
+            "underground"
+          ],
+          "transitLines": [
+            "39",
+            "Калининская линия",
+            "Кольцевая линия",
+            "Т1"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 57.28
+        }
+      ]
+    },
+    {
+      "id": "rudn-ordzhonikidze--domodedovskaya--from-anchor",
+      "anchorId": "rudn-ordzhonikidze",
+      "direction": "from-anchor",
+      "sector": "south-east",
+      "origin": {
+        "name": "РУДН на Орджоникидзе",
+        "coordinates": [
+          55.71068,
+          37.603253
+        ]
+      },
+      "destination": {
+        "name": "Метро Домодедовская",
+        "coordinates": [
+          55.610833333,
+          37.719722222
+        ]
+      },
+      "measuredAt": "2026-08-14T00:20:06+00:00",
+      "fastestTransitMinutes": 51.52,
+      "strictMetroMinutes": 53.88,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 3091,
+          "durationText": "52 мин",
+          "lengthMeters": 16125.32711681594,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 510,
+          "transferSeconds": 0,
+          "transitSeconds": 1830,
+          "transportTypes": [
+            "bus",
+            "tramway"
+          ],
+          "transitLines": [
+            "39",
+            "Т1",
+            "е85"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 51.52
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 3136,
+          "durationText": "52 мин",
+          "lengthMeters": 15754.465140919345,
+          "segmentCount": 3,
+          "transitSegmentCount": 1,
+          "walkingSeconds": 1156,
+          "transferSeconds": 0,
+          "transitSeconds": 1500,
+          "transportTypes": [
+            "bus"
+          ],
+          "transitLines": [
+            "е85"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 52.27
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 3233,
+          "durationText": "54 мин",
+          "lengthMeters": 22991.343202412576,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 1036,
+          "transferSeconds": 160,
+          "transitSeconds": 1745,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Замоскворецкая линия",
+            "Калужско-Рижская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 53.88
+        }
+      ]
+    },
+    {
+      "id": "rudn-ordzhonikidze--domodedovskaya--to-anchor",
+      "anchorId": "rudn-ordzhonikidze",
+      "direction": "to-anchor",
+      "sector": "south-east",
+      "origin": {
+        "name": "Метро Домодедовская",
+        "coordinates": [
+          55.610833333,
+          37.719722222
+        ]
+      },
+      "destination": {
+        "name": "РУДН на Орджоникидзе",
+        "coordinates": [
+          55.71068,
+          37.603253
+        ]
+      },
+      "measuredAt": "2026-08-14T00:20:06+00:00",
+      "fastestTransitMinutes": 51.82,
+      "strictMetroMinutes": 53.92,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 3109,
+          "durationText": "52 мин",
+          "lengthMeters": 21927.390271562937,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 437,
+          "transferSeconds": 0,
+          "transitSeconds": 2255,
+          "transportTypes": [
+            "tramway",
+            "underground"
+          ],
+          "transitLines": [
+            "39",
+            "Замоскворецкая линия",
+            "Т1"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 51.82
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 3235,
+          "durationText": "54 мин",
+          "lengthMeters": 22991.459515233204,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 1038,
+          "transferSeconds": 160,
+          "transitSeconds": 1745,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Замоскворецкая линия",
+            "Калужско-Рижская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 53.92
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 3362,
+          "durationText": "56 мин",
+          "lengthMeters": 15902.590431031855,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 405,
+          "transferSeconds": 0,
+          "transitSeconds": 2190,
+          "transportTypes": [
+            "bus",
+            "tramway"
+          ],
+          "transitLines": [
+            "39",
+            "Т1",
+            "е85"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 56.03
+        }
+      ]
+    },
+    {
+      "id": "rudn-ordzhonikidze--rasskazovka--from-anchor",
+      "anchorId": "rudn-ordzhonikidze",
+      "direction": "from-anchor",
+      "sector": "south-west",
+      "origin": {
+        "name": "РУДН на Орджоникидзе",
+        "coordinates": [
+          55.71068,
+          37.603253
+        ]
+      },
+      "destination": {
+        "name": "Метро Рассказовка",
+        "coordinates": [
+          55.633,
+          37.3328
+        ]
+      },
+      "measuredAt": "2026-08-14T00:29:34+00:00",
+      "fastestTransitMinutes": 62.95,
+      "strictMetroMinutes": 68.97,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 3777,
+          "durationText": "1 ч 3 мин",
+          "lengthMeters": 25532.8764348748,
+          "segmentCount": 9,
+          "transitSegmentCount": 4,
+          "walkingSeconds": 590,
+          "transferSeconds": 400,
+          "transitSeconds": 2095,
+          "transportTypes": [
+            "tramway",
+            "underground"
+          ],
+          "transitLines": [
+            "14",
+            "39",
+            "Большая кольцевая линия",
+            "Калужско-Рижская линия",
+            "Солнцевская линия",
+            "Т1"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 62.95
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 4718,
+          "durationText": "1 ч 19 мин",
+          "lengthMeters": 24242.5782316154,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 1297,
+          "transferSeconds": 0,
+          "transitSeconds": 2825,
+          "transportTypes": [
+            "bus",
+            "underground"
+          ],
+          "transitLines": [
+            "Солнцевская линия",
+            "м16"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 78.63
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 5045,
+          "durationText": "1 ч 24 мин",
+          "lengthMeters": 29932.523481995162,
+          "segmentCount": 9,
+          "transitSegmentCount": 4,
+          "walkingSeconds": 630,
+          "transferSeconds": 0,
+          "transitSeconds": 3322,
+          "transportTypes": [
+            "bus",
+            "suburban",
+            "tramway"
+          ],
+          "transitLines": [
+            "103",
+            "130",
+            "14",
+            "255",
+            "39",
+            "Балашиха - Апрелевка",
+            "Балашиха - Крёкшино",
+            "Балашиха - Лесной Городок",
+            "Владимир - Апрелевка",
+            "Железнодорожная - Апрелевка",
+            "Железнодорожная - Лесной Городок",
+            "Захарово - Апрелевка",
+            "Захарово - Лесной Городок",
+            "Крутое - Апрелевка",
+            "Крутое - Крёкшино",
+            "Крутое - Лесной Городок",
+            "Купавна - Апрелевка",
+            "Купавна - Лесной Городок",
+            "Марьина Роща - Апрелевка",
+            "Марьина Роща - Лесной Городок",
+            "Минская - Апрелевка",
+            "Москва (Белорусский вокзал) - Апрелевка",
+            "Москва-Сити (Тестовская, МЦД-4) - Апрелевка",
+            "Павловский Посад - Апрелевка",
+            "Павловский Посад - Лесной Городок",
+            "Петушки - Апрелевка",
+            "Петушки - Лесной Городок",
+            "Площадь трёх вокзалов (Каланчёвская) - Апрелевка",
+            "Т1",
+            "Фрязево - Апрелевка",
+            "Фрязево - Лесной Городок",
+            "Храпуново - Апрелевка",
+            "Электрогорск - Апрелевка",
+            "Электрогорск - Лесной Городок",
+            "е29"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 84.08
+        },
+        {
+          "alternative": "fallback-leninsky-prospekt",
+          "durationSeconds": 4138,
+          "durationMinutes": 68.97,
+          "durationText": "69 мин",
+          "lengthMeters": 25670.347944584828,
+          "segmentCount": 8,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 1264.0,
+          "transferSeconds": 400.0,
+          "transitSeconds": 1975.0,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Большая кольцевая линия",
+            "Калужско-Рижская линия",
+            "Солнцевская линия"
+          ],
+          "metroOnlyVerified": true,
+          "assembledFrom": {
+            "accessMode": "pedestrian",
+            "entryStation": {
+              "id": "leninsky-prospekt",
+              "name": "Метро Ленинский проспект",
+              "coordinates": [
+                55.7075,
+                37.586388888
+              ]
+            },
+            "accessDurationSeconds": 843,
+            "metroDurationSeconds": 3295
+          }
+        },
+        {
+          "alternative": "fallback-shabolovskaya",
+          "durationSeconds": 4245,
+          "durationMinutes": 70.75,
+          "durationText": "71 мин",
+          "lengthMeters": 27174.660370852558,
+          "segmentCount": 8,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 1181.0,
+          "transferSeconds": 400.0,
+          "transitSeconds": 2165.0,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Большая кольцевая линия",
+            "Калужско-Рижская линия",
+            "Солнцевская линия"
+          ],
+          "metroOnlyVerified": true,
+          "assembledFrom": {
+            "accessMode": "pedestrian",
+            "entryStation": {
+              "id": "shabolovskaya",
+              "name": "Метро Шаболовская",
+              "coordinates": [
+                55.718611111,
+                37.607777777
+              ]
+            },
+            "accessDurationSeconds": 769,
+            "metroDurationSeconds": 3476
+          }
+        }
+      ]
+    },
+    {
+      "id": "rudn-ordzhonikidze--rasskazovka--to-anchor",
+      "anchorId": "rudn-ordzhonikidze",
+      "direction": "to-anchor",
+      "sector": "south-west",
+      "origin": {
+        "name": "Метро Рассказовка",
+        "coordinates": [
+          55.633,
+          37.3328
+        ]
+      },
+      "destination": {
+        "name": "РУДН на Орджоникидзе",
+        "coordinates": [
+          55.71068,
+          37.603253
+        ]
+      },
+      "measuredAt": "2026-08-14T00:20:06+00:00",
+      "fastestTransitMinutes": 62.53,
+      "strictMetroMinutes": 65.37,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 3752,
+          "durationText": "1 ч 3 мин",
+          "lengthMeters": 25558.254246643406,
+          "segmentCount": 9,
+          "transitSegmentCount": 4,
+          "walkingSeconds": 630,
+          "transferSeconds": 400,
+          "transitSeconds": 2100,
+          "transportTypes": [
+            "tramway",
+            "underground"
+          ],
+          "transitLines": [
+            "14",
+            "39",
+            "Большая кольцевая линия",
+            "Калужско-Рижская линия",
+            "Солнцевская линия",
+            "Т1"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 62.53
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 3922,
+          "durationText": "1 ч 5 мин",
+          "lengthMeters": 25430.48929799438,
+          "segmentCount": 7,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 1132,
+          "transferSeconds": 400,
+          "transitSeconds": 1960,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Большая кольцевая линия",
+            "Калужско-Рижская линия",
+            "Солнцевская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 65.37
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 4044,
+          "durationText": "1 ч 7 мин",
+          "lengthMeters": 23909.699475393703,
+          "segmentCount": 9,
+          "transitSegmentCount": 4,
+          "walkingSeconds": 747,
+          "transferSeconds": 310,
+          "transitSeconds": 2320,
+          "transportTypes": [
+            "tramway",
+            "underground"
+          ],
+          "transitLines": [
+            "14",
+            "39",
+            "Большая кольцевая линия",
+            "Солнцевская линия",
+            "Т1",
+            "Троицкая линия"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 67.4
+        }
+      ]
+    },
+    {
+      "id": "rudn-ordzhonikidze--pyatnitskoye-shosse--from-anchor",
+      "anchorId": "rudn-ordzhonikidze",
+      "direction": "from-anchor",
+      "sector": "west",
+      "origin": {
+        "name": "РУДН на Орджоникидзе",
+        "coordinates": [
+          55.71068,
+          37.603253
+        ]
+      },
+      "destination": {
+        "name": "Метро Пятницкое шоссе",
+        "coordinates": [
+          55.853634,
+          37.353108
+        ]
+      },
+      "measuredAt": "2026-08-14T00:20:06+00:00",
+      "fastestTransitMinutes": 70.6,
+      "strictMetroMinutes": 71.35,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 4236,
+          "durationText": "1 ч 11 мин",
+          "lengthMeters": 34123.88455683927,
+          "segmentCount": 9,
+          "transitSegmentCount": 4,
+          "walkingSeconds": 576,
+          "transferSeconds": 205,
+          "transitSeconds": 2825,
+          "transportTypes": [
+            "tramway",
+            "underground"
+          ],
+          "transitLines": [
+            "14",
+            "39",
+            "Арбатско-Покровская линия",
+            "Калужско-Рижская линия",
+            "Кольцевая линия",
+            "Т1"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 70.6
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 4281,
+          "durationText": "1 ч 11 мин",
+          "lengthMeters": 31970.046864384218,
+          "segmentCount": 7,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 1134,
+          "transferSeconds": 205,
+          "transitSeconds": 2505,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Арбатско-Покровская линия",
+            "Калужско-Рижская линия",
+            "Кольцевая линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 71.35
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 4609,
+          "durationText": "1 ч 17 мин",
+          "lengthMeters": 35231.48542409023,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 1350,
+          "transferSeconds": 125,
+          "transitSeconds": 2840,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Арбатско-Покровская линия",
+            "Серпуховско-Тимирязевская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 76.82
+        }
+      ]
+    },
+    {
+      "id": "rudn-ordzhonikidze--pyatnitskoye-shosse--to-anchor",
+      "anchorId": "rudn-ordzhonikidze",
+      "direction": "to-anchor",
+      "sector": "west",
+      "origin": {
+        "name": "Метро Пятницкое шоссе",
+        "coordinates": [
+          55.853634,
+          37.353108
+        ]
+      },
+      "destination": {
+        "name": "РУДН на Орджоникидзе",
+        "coordinates": [
+          55.71068,
+          37.603253
+        ]
+      },
+      "measuredAt": "2026-08-14T00:20:06+00:00",
+      "fastestTransitMinutes": 71.63,
+      "strictMetroMinutes": 71.63,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 4298,
+          "durationText": "1 ч 12 мин",
+          "lengthMeters": 31969.75284981115,
+          "segmentCount": 7,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 1136,
+          "transferSeconds": 205,
+          "transitSeconds": 2520,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Арбатско-Покровская линия",
+            "Калужско-Рижская линия",
+            "Кольцевая линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 71.63
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 4471,
+          "durationText": "1 ч 15 мин",
+          "lengthMeters": 35441.99929333742,
+          "segmentCount": 7,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 601,
+          "transferSeconds": 125,
+          "transitSeconds": 3180,
+          "transportTypes": [
+            "tramway",
+            "underground"
+          ],
+          "transitLines": [
+            "39",
+            "Арбатско-Покровская линия",
+            "Серпуховско-Тимирязевская линия",
+            "Т1"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 74.52
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 4619,
+          "durationText": "1 ч 17 мин",
+          "lengthMeters": 35231.24717129883,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 1350,
+          "transferSeconds": 125,
+          "transitSeconds": 2850,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Арбатско-Покровская линия",
+            "Серпуховско-Тимирязевская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 76.98
+        }
+      ]
+    },
+    {
+      "id": "rudn-ordzhonikidze--planernaya--from-anchor",
+      "anchorId": "rudn-ordzhonikidze",
+      "direction": "from-anchor",
+      "sector": "north-west",
+      "origin": {
+        "name": "РУДН на Орджоникидзе",
+        "coordinates": [
+          55.71068,
+          37.603253
+        ]
+      },
+      "destination": {
+        "name": "Метро Планерная",
+        "coordinates": [
+          55.861747833,
+          37.435977
+        ]
+      },
+      "measuredAt": "2026-08-14T00:20:06+00:00",
+      "fastestTransitMinutes": 58.32,
+      "strictMetroMinutes": 58.53,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 3499,
+          "durationText": "58 мин",
+          "lengthMeters": 29525.363158606913,
+          "segmentCount": 7,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 436,
+          "transferSeconds": 45,
+          "transitSeconds": 2540,
+          "transportTypes": [
+            "tramway",
+            "underground"
+          ],
+          "transitLines": [
+            "14",
+            "39",
+            "Калужско-Рижская линия",
+            "Т1",
+            "Таганско-Краснопресненская линия"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 58.32
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 3512,
+          "durationText": "59 мин",
+          "lengthMeters": 24987.583049689816,
+          "segmentCount": 7,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 994,
+          "transferSeconds": 225,
+          "transitSeconds": 1865,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Калужско-Рижская линия",
+            "Кольцевая линия",
+            "Таганско-Краснопресненская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 58.53
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 3544,
+          "durationText": "59 мин",
+          "lengthMeters": 27371.52546615826,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 994,
+          "transferSeconds": 45,
+          "transitSeconds": 2220,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Калужско-Рижская линия",
+            "Таганско-Краснопресненская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 59.07
+        }
+      ]
+    },
+    {
+      "id": "rudn-ordzhonikidze--planernaya--to-anchor",
+      "anchorId": "rudn-ordzhonikidze",
+      "direction": "to-anchor",
+      "sector": "north-west",
+      "origin": {
+        "name": "Метро Планерная",
+        "coordinates": [
+          55.861747833,
+          37.435977
+        ]
+      },
+      "destination": {
+        "name": "РУДН на Орджоникидзе",
+        "coordinates": [
+          55.71068,
+          37.603253
+        ]
+      },
+      "measuredAt": "2026-08-14T00:20:06+00:00",
+      "fastestTransitMinutes": 58.65,
+      "strictMetroMinutes": 58.65,
+      "strictMetroVerified": true,
+      "alternatives": [
+        {
+          "alternative": 1,
+          "durationSeconds": 3519,
+          "durationText": "59 мин",
+          "lengthMeters": 24987.584558007205,
+          "segmentCount": 7,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 996,
+          "transferSeconds": 225,
+          "transitSeconds": 1870,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Калужско-Рижская линия",
+            "Кольцевая линия",
+            "Таганско-Краснопресненская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 58.65
+        },
+        {
+          "alternative": 2,
+          "durationSeconds": 3541,
+          "durationText": "59 мин",
+          "lengthMeters": 27371.413215672466,
+          "segmentCount": 5,
+          "transitSegmentCount": 2,
+          "walkingSeconds": 996,
+          "transferSeconds": 45,
+          "transitSeconds": 2215,
+          "transportTypes": [
+            "underground"
+          ],
+          "transitLines": [
+            "Калужско-Рижская линия",
+            "Таганско-Краснопресненская линия"
+          ],
+          "metroOnlyVerified": true,
+          "durationMinutes": 59.02
+        },
+        {
+          "alternative": 3,
+          "durationSeconds": 3790,
+          "durationText": "1 ч 3 мин",
+          "lengthMeters": 27443.59255119996,
+          "segmentCount": 7,
+          "transitSegmentCount": 3,
+          "walkingSeconds": 388,
+          "transferSeconds": 45,
+          "transitSeconds": 2395,
+          "transportTypes": [
+            "tramway",
+            "underground"
+          ],
+          "transitLines": [
+            "14",
+            "Калужско-Рижская линия",
+            "Таганско-Краснопресненская линия"
+          ],
+          "metroOnlyVerified": false,
+          "durationMinutes": 63.17
+        }
+      ]
+    }
+  ]
+}
